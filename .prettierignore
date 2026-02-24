@@ -1,0 +1,19 @@
+# Стандартные игнорируемые файлы
+node_modules
+.next
+dist
+build
+
+# Конфигурационные файлы
+*.yml
+*.toml
+*.json
+!.prettierrc
+!.prettierignore
+
+# Логи и временные файлы
+*.log
+.env
+.env.local
+.env.development
+.env.production
