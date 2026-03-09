@@ -1,3 +1,5 @@
+// Выше указаны пути (auth) и (dashboard) они не отображаются в маршрутах, нужны для разделения
+
 import { Provider } from '@/providers/chakraProvider/provider'
 
 export const metadata = {
@@ -9,10 +11,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ru" suppressHydrationWarning>
       <body>
-        <Provider>
-          <div>Основной layout</div>
-          {children}
-        </Provider>
+        <Provider>{children}</Provider>
       </body>
     </html>
   )
