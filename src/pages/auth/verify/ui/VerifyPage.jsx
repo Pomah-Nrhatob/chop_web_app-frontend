@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { forgotPasswordSchema } from '@/features/auth/model/forgot-password-schema'
-
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -33,21 +32,37 @@ export const VerifyPage = () => {
     resolver: zodResolver(forgotPasswordSchema),
   })
 
-  const { mutate: verify, isPending: isVerifying, isError } = useVerify()
-  const { mutate: resend, isPending: isResending } = useResendVerify()
+  const {
+    mutate: verify,
+    isPending: isVerifying,
+    isError,
+    onSuccess: onSuccessVerify,
+    onError: onErrorVerify,
+  } = useVerify()
+  const {
+    mutate: resend,
+    isPending: isResending,
+    onSuccess: onSuccessResend,
+    onError: onErrorResend,
+  } = useResendVerify()
 
   const called = useRef(false)
 
   useEffect(() => {
     if (token && !called.current) {
-      verify(token)
+      verify(token, {
+        onSuccessVerify,
+        onErrorVerify,
+      })
       called.current = true
     }
   }, [token, verify])
 
   const onSubmit = (data) => {
-    setShowResend(false)
-    resend(data)
+    resend(data, {
+      onSuccessResend,
+      onErrorResend,
+    })
   }
 
   return (

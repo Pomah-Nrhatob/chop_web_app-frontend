@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { authApi } from './auth-api'
 import { useRouter } from 'next/navigation'
+import { authApi } from './auth-api'
+import { toaster } from '@/providers/chakraProvider/toaster'
 
 export const useResendVerify = () => {
   const router = useRouter()
@@ -8,9 +9,20 @@ export const useResendVerify = () => {
   return useMutation({
     mutationFn: (data) => authApi.requestVerifyEmail(data),
     onSuccess: (res) => {
-      alert(res.message || 'Новое письмо отправлено!')
+      toaster.create({
+        title: 'Успешно!',
+        description: res?.message,
+        type: 'success',
+      })
+
       router.push('/login')
     },
-    onError: (err) => alert(err.response?.data?.message || 'Ошибка отправки'),
+    onError: (err) => {
+      toaster.create({
+        title: 'Ошибка',
+        description: err.response?.data?.message,
+        type: 'error',
+      })
+    },
   })
 }

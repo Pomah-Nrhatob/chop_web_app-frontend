@@ -4,13 +4,12 @@ import { useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Input, Stack, Field, Heading } from '@chakra-ui/react'
-
 import { resetPasswordSchema } from '@/features/auth/model/reset-password-schema'
 import { useResetPassword } from '@/features/auth/api/use-reset-password'
 
 export const ResetPasswordPage = () => {
   const params = useParams()
-  const token = params?.token // Достаем токен из пути /reset-password/[token]
+  const token = params?.token
 
   const {
     register,
@@ -20,13 +19,17 @@ export const ResetPasswordPage = () => {
     resolver: zodResolver(resetPasswordSchema),
   })
 
-  const { mutate, isPending } = useResetPassword()
+  const { mutate, isPending, onSuccess, onError } = useResetPassword()
 
   const onSubmit = (data) => {
-    mutate({
-      newPassword: data.password,
-      token,
-    })
+    mutate(
+      {
+        newPassword: data.password,
+        token,
+      },
+      onSuccess,
+      onError
+    )
   }
 
   return (

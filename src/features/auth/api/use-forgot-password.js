@@ -1,17 +1,22 @@
 import { useMutation } from '@tanstack/react-query'
-import { authApi } from './auth-api' // импортируем объект с запросами из этой же папки
+import { authApi } from './auth-api'
+import { toaster } from '@/providers/chakraProvider/toaster'
 import { useRouter } from 'next/navigation'
 
 export const useForgotPassword = () => {
   const router = useRouter()
 
   return useMutation({
-    // Убедитесь, что data передается целиком в authApi
     mutationFn: (data) => authApi.resetPasswordRequest(data),
-    onSuccess: () => {
-      alert('Инструкции отправлены на почту')
-      router.push('/login')
+    onSuccess: (res) => {
+      toaster.create({
+        title: 'Сброс пароля успешен',
+        description: res?.message,
+        type: 'success',
+      })
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
     },
-    onError: (err) => alert(err.response?.data?.message || 'Ошибка'),
   })
 }
