@@ -2,14 +2,17 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Input, Stack, Field, Flex } from '@chakra-ui/react' // Добавили Flex
+import { Button, Input, Stack, Field, Group, InputElement, IconButton } from '@chakra-ui/react'
 import { Link as ChakraLink } from '@chakra-ui/react'
 import NextLink from 'next/link'
-
+import { useState } from 'react'
+import { LuEye, LuEyeOff } from 'react-icons/lu'
 import { loginSchema } from '@/features/auth/model/login-schema'
 import { useAuth } from '@/features/auth/api/use-auth'
 
 export const LoginForm = () => {
+  const [showPassword, setShowPassword] = useState(false)
+  const togglePassword = () => setShowPassword(!showPassword)
   const {
     register,
     handleSubmit,
@@ -18,10 +21,17 @@ export const LoginForm = () => {
     resolver: zodResolver(loginSchema),
   })
 
-  const { mutate, isPending } = useAuth()
+  const { mutate, isPending, isError, reset, onSuccess, onError } = useAuth()
+
+  const handleInputChange = () => {
+    if (isError) reset()
+  }
 
   const onSubmit = (data) => {
-    mutate(data)
+    mutate(data, {
+      onSuccess,
+      onError,
+    })
   }
 
   return (
@@ -30,16 +40,34 @@ export const LoginForm = () => {
         {/* Поле Email */}
         <Field.Root invalid={!!errors.email}>
           <Field.Label>Email</Field.Label>
-          <Input {...register('email')} type="email" placeholder="example@mail.com" />
+          <Input
+            {...register('email', { onChange: handleInputChange })}
+            type="email"
+            placeholder="example@mail.com"
+          />
           <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
         </Field.Root>
 
         {/* Поле Пароль с ссылкой "Забыли пароль?" */}
         <Field.Root invalid={!!errors.password}>
-          <Flex justify="space-between" align="baseline" mb={1} width="full">
-            <Field.Label mb={0}>Пароль</Field.Label>
-          </Flex>
-          <Input {...register('password')} type="password" placeholder="******" />
+          <Field.Label>Пароль</Field.Label>
+          <Group width="full">
+            <Input
+              {...register('password', { onChange: handleInputChange })}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="******"
+            />
+            <InputElement placement="end" paddingEnd="2">
+              <IconButton
+                variant="ghost"
+                size="sm"
+                onClick={togglePassword}
+                aria-label={showPassword ? 'Скрыть' : 'Показать'}
+              >
+                {showPassword ? <LuEyeOff /> : <LuEye />}
+              </IconButton>
+            </InputElement>
+          </Group>
           <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
           <ChakraLink
             as={NextLink}
