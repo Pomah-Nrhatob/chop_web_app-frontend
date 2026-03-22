@@ -1,5 +1,6 @@
 import { LoginForm } from '@/pages/auth/login/ui/Login'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   return (
@@ -14,9 +15,9 @@ export default function LoginPage() {
 
         <Text fontSize="sm" textAlign="center" color="fg.muted">
           Нет аккаунта?{' '}
-          <a href="/registration" style={{ color: 'blue' }}>
+          <Link href="/registration" style={{ color: 'blue' }}>
             Зарегистрироваться
-          </a>
+          </Link>
         </Text>
       </VStack>
     </Container>

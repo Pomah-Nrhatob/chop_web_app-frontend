@@ -1,0 +1,1 @@
+export const REFRESH_TOKEN_BUFFER_MS = 60 * 1000

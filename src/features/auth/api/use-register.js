@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { authApi } from './auth-api'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { useRouter } from 'next/navigation'
+import { authApi } from '@/shared/api/auth/auth-api'
 
 export const useRegister = () => {
   const router = useRouter()
