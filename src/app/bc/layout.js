@@ -1,7 +1,9 @@
+import { CrmHeader } from '@/widgets/crmHeader/ui/CrmHeader'
+
 export default function layout({ children }) {
   return (
     <div>
-      тут будет общая панель для crm
+      <CrmHeader />
       <div>{children}</div>
     </div>
   )
