@@ -1,19 +1,16 @@
-import { authOptions } from '@/configs/auth'
-import NextAuth from 'next-auth'
+import { auth } from '@/configs/auth'
 import { NextResponse } from 'next/server'
 
-const { auth } = NextAuth(authOptions)
-
 export default auth(async function middleware(req) {
-  const pathname = req.nextUrl.pathname
-  const isLoggedIn = !!req.auth
+  const { pathname } = req.nextUrl
+  const session = await req.auth
 
-  if (pathname.startsWith('/bc') && !isLoggedIn) {
-    return NextResponse.redirect(new URL('/', req.url))
+  if (pathname.startsWith('/bc') && !session) {
+    return NextResponse.redirect(new URL('/login', req.url))
   }
 
   const authPages = ['/login', '/registration', '/forgot-password', '/reset-password', '/verify']
-  if (authPages.some((page) => pathname.startsWith(page)) && isLoggedIn) {
+  if (authPages.some((page) => pathname.startsWith(page)) && session) {
     return NextResponse.redirect(new URL('/', req.url))
   }
 
