@@ -1,6 +1,4 @@
-import { auth } from '@/configs/auth'
 import { Provider } from '@/providers/chakraProvider/provider'
-import { Header } from '@/widgets/header'
 import { SessionProvider } from 'next-auth/react'
 
 export const metadata = {
@@ -13,10 +11,7 @@ export default async function RootLayout({ children }) {
     <html lang="ru" suppressHydrationWarning>
       <body>
         <Provider>
-          <SessionProvider>
-            <Header />
-            {children}
-          </SessionProvider>
+          <SessionProvider>{children}</SessionProvider>
         </Provider>
       </body>
     </html>
