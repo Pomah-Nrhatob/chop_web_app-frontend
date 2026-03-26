@@ -1,4 +1,4 @@
-import { CrmHeader } from '@/widgets/crmHeader/ui/CrmHeader'
+import { CrmHeader } from '@/widgets/header'
 
 export default function layout({ children }) {
   return (
