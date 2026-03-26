@@ -1,5 +1,8 @@
+import { auth } from '@/configs/auth'
+import { AuthSessionSync } from '@/providers/authSessionSync/provider'
 import { Provider } from '@/providers/chakraProvider/provider'
-import { SessionProvider } from 'next-auth/react'
+import { SessionProviderContainer } from '@/providers/sessionProvider/provider'
+import { QueryProvider } from '@/providers/queryProvider/provider'
 
 export const metadata = {
   title: 'Create Next App',
@@ -7,11 +10,17 @@ export const metadata = {
 }
 
 export default async function RootLayout({ children }) {
+  const session = await auth()
+
   return (
     <html lang="ru" suppressHydrationWarning>
       <body>
         <Provider>
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProviderContainer session={session}>
+            <QueryProvider>
+              <AuthSessionSync>{children}</AuthSessionSync>
+            </QueryProvider>
+          </SessionProviderContainer>
         </Provider>
       </body>
     </html>
