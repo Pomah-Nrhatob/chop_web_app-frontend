@@ -3,9 +3,11 @@ import { toaster } from '@/providers/chakraProvider/toaster'
 import { signIn } from 'next-auth/react'
 import { authApi } from '@/shared/api/auth/auth-api'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@/features/users/api/use-user'
 
 export const useAuth = () => {
   const router = useRouter()
+  const { refreshUser } = useUser()
 
   return useMutation({
     mutationFn: async (data) => {
@@ -32,7 +34,8 @@ export const useAuth = () => {
         throw new Error(message)
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // refreshUser()
       toaster.create({
         title: 'Вход выполнен успешно',
         type: 'success',

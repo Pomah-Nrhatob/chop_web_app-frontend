@@ -4,6 +4,12 @@ let isRefreshing = false
 let failedQueue = []
 let refreshFailed = false // ✅ Флаг проваленного рефреша
 
+export const clearUserSession = () => {
+  queryClient.setQueryData(USER_QUERY_KEY, null)
+  queryClient.removeQueries({ queryKey: USER_QUERY_KEY })
+  queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY })
+}
+
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error || refreshFailed) {

@@ -1,10 +1,12 @@
 'use client'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
+import { USER_QUERY_KEY } from '@/features/users/api/use-user'
 
 export const useLogout = () => {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
@@ -27,6 +29,7 @@ export const useLogout = () => {
       return data
     },
     onSuccess: () => {
+      // queryClient.clear()
       router.push('/login')
     },
     onError: (err) => {
