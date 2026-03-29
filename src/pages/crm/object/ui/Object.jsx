@@ -1,3 +1,48 @@
+'use client'
+
+import { Box, Flex, Heading, Button } from '@chakra-ui/react'
+import { useState } from 'react'
+import ObjectForm from './ObjectForm'
+import ObjectList from './ObjectList'
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from '@/components/ui/dialog'
+
 export default function Object() {
-  return <div>здесь будет страница с обьектами</div>
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Box p={8} maxW="1600px" mx="auto">
+      <Flex justify="space-between" align="center" mb={6}>
+        <Heading size="lg">Управление объектами</Heading>
+
+        <Button colorPalette="blue" onClick={() => setOpen(true)}>
+          + Добавить объект
+        </Button>
+      </Flex>
+
+      <Box mt={4}>
+        <ObjectList />
+      </Box>
+
+      <DialogRoot open={open} onOpenChange={(e) => setOpen(e.open)} size="lg" placement="center">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Регистрация нового объекта</DialogTitle>
+          </DialogHeader>
+
+          <DialogBody pb={6}>
+            <ObjectForm onSuccess={() => setOpen(false)} />
+          </DialogBody>
+
+          <DialogCloseTrigger />
+        </DialogContent>
+      </DialogRoot>
+    </Box>
+  )
 }
