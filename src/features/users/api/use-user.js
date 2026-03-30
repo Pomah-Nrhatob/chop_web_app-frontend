@@ -1,3 +1,4 @@
+import { ONE_COMPANY_QUERY_KEY } from '@/features/company/api/use-company'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { userApi } from '@/shared/api/user/user-api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -32,20 +33,16 @@ export const useUser = () => {
 }
 
 export const useChangeActiveCompany = (additionalOnSuccess) => {
+  const { refreshUser } = useUser()
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
     mutationFn: (data) => userApi.changeActiveCompany(data),
 
-    onSuccess: (response, variables) => {
-      queryClient.setQueryData(USER_QUERY_KEY, (oldUser) => {
-        if (!oldUser) return oldUser
+    onSuccess: async () => {
+      await refreshUser()
 
-        return {
-          ...oldUser,
-          activeCompanyId: variables.activeCompanyId,
-        }
-      })
+      queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
 
       additionalOnSuccess?.()
 
@@ -66,7 +63,21 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
 
   return {
     changeActiveCompany: mutation.mutate,
-    isLoading: mutation.isPending, // или mutation.isLoading в старых версиях React Query
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  }
+}
+
+export const useSearchUsers = () => {
+  const mutation = useMutation({
+    mutationFn: (searchQuery) => userApi.getAllUsers(searchQuery),
+  })
+
+  return {
+    users: mutation.data || [],
+    searchUsers: mutation.mutate,
+    isLoading: mutation.isPending,
     isError: mutation.isError,
     error: mutation.error,
   }

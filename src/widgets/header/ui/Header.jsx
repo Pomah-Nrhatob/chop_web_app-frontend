@@ -61,7 +61,7 @@ export const Header = () => {
             Войти <CiLogin />
           </Button>
         )}
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
       </Flex>
     </HeaderContainer>
   )

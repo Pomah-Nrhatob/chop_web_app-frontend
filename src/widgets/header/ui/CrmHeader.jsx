@@ -6,6 +6,7 @@ import { useUser } from '@/features/users/api/use-user'
 import { useRouter } from 'next/navigation'
 import { SelectActiveCompany } from '@/widgets/header/ui/SelectActiveCompany'
 import { Flex, Text } from '@chakra-ui/react'
+import { ThemeToggle } from '@/widgets/header/ui/ThemeToggle'
 
 export const CrmHeader = () => {
   const { user, isLoading } = useUser()
@@ -35,6 +36,7 @@ export const CrmHeader = () => {
           onProfileClick={() => router.push('/profile')}
           onCompaniesClick={() => router.push('/company')}
         />
+        {/* <ThemeToggle /> */}
       </Flex>
     </HeaderContainer>
   )
