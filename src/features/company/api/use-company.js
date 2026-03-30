@@ -1,16 +1,41 @@
 import { USER_QUERY_KEY } from '@/features/users/api/use-user'
+import { toaster } from '@/providers/chakraProvider/toaster'
 import { companyApi } from '@/shared/api/company/company-api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export const COMPANY_QUERY_KEY = ['companies']
+export const ONE_COMPANY_QUERY_KEY = ['company']
 
 export const useCompanies = () => {
-  return useQuery({
+  const query = useQuery({
     queryKey: COMPANY_QUERY_KEY,
-    queryFn: () => companyApi.getAllUserByCompany(),
+    queryFn: () => companyApi.getAllCompany(),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   })
+
+  return {
+    ...query,
+    companies: query.data,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+  }
+}
+
+export const useOneCompany = () => {
+  const query = useQuery({
+    queryKey: ONE_COMPANY_QUERY_KEY,
+    queryFn: () => companyApi.getActiveCompany(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  })
+
+  return {
+    ...query,
+    activeCompanyInfo: query.data,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+  }
 }
 
 export const useCreateCompany = () => {
@@ -35,12 +60,13 @@ export const useCreateCompany = () => {
       })
 
       queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
     },
   })
 }
 
 // 🔹 Удаление компании
-export const useDeleteCompany = () => {
+export const useDeleteCompany = (additionalOnSuccess) => {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -57,8 +83,26 @@ export const useDeleteCompany = () => {
           activeCompanyId: oldUser.activeCompanyId === companyId ? null : oldUser.activeCompanyId,
         }
       })
+      additionalOnSuccess?.()
+
+      toaster.create({
+        title: 'Компания удалена',
+        description: 'Компания успешно удалена',
+        type: 'success',
+        duration: 3000,
+      })
 
       queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY })
+    },
+    onError: (error) => {
+      additionalOnSuccess?.()
+      toaster.create({
+        title: 'Ошибка',
+        description: error.message,
+        type: 'error',
+        duration: 3000,
+      })
     },
   })
 }

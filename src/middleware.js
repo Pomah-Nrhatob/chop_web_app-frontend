@@ -5,7 +5,12 @@ export default auth(async function middleware(req) {
   const { pathname } = req.nextUrl
   const session = await req.auth
 
-  if (pathname.startsWith('/bc') && !session) {
+  if (
+    (pathname.startsWith('/bc') ||
+      pathname.startsWith('/company') ||
+      pathname.startsWith('/profile')) &&
+    !session
+  ) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
@@ -25,5 +30,7 @@ export const config = {
     '/forgot-password',
     '/reset-password',
     '/verify',
+    '/company',
+    '/profile',
   ],
 }

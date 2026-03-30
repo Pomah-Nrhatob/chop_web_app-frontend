@@ -48,11 +48,26 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createCompanySchema } from '@/features/company/model/create-company-schema'
-import { useCreateCompany } from '@/features/company/api/use-company'
+import {
+  useCompanies,
+  useCreateCompany,
+  useDeleteCompany,
+  useOneCompany,
+} from '@/features/company/api/use-company'
 import { toaster } from '@/providers/chakraProvider/toaster'
+import { useUser } from '@/features/users/api/use-user'
+import CompanyDetails from '@/pages/companyPage/ui/CompanyDetails'
+import UserCompaniesList from '@/pages/companyPage/ui/UserCompaniesList'
 
 export default function Company() {
   const [isOpen, setIsOpen] = useState(false)
+  const { companies, isLoading: isLoadingCompanies } = useCompanies()
+  const {
+    activeCompanyInfo,
+    isLoading: isLoadingCompany,
+    isFetching: isFetchingCompany,
+  } = useOneCompany()
+  const { user } = useUser()
 
   const {
     register,
@@ -97,7 +112,7 @@ export default function Company() {
   }
 
   return (
-    <Container maxW="container.lg" pt={10} pb={20}>
+    <Container maxW="container.lg" pt={10} pb={20} display="flex" gap={6} flexDirection="column">
       <VStack spacing={6} align="stretch">
         {/* Заголовок страницы */}
         <HStack justify="space-between" align="center">
@@ -163,6 +178,20 @@ export default function Company() {
           </form>
         </HStack>
       </VStack>
+
+      {isLoadingCompany || isFetchingCompany ? (
+        <Spinner />
+      ) : (
+        <>
+          <CompanyDetails companyData={activeCompanyInfo} currentUserId={user?.id} />
+          <UserCompaniesList
+            onSetActive={() => console.log('актив')}
+            activeCompanyId={user?.activeCompanyId}
+            companies={companies}
+            currentUserId={user?.id}
+          />
+        </>
+      )}
     </Container>
   )
 }
