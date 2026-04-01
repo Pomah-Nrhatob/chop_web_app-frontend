@@ -56,8 +56,8 @@ import {
 } from '@/features/company/api/use-company'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { useUser } from '@/features/users/api/use-user'
-import CompanyDetails from '@/pages/companyPage/ui/CompanyDetails'
-import UserCompaniesList from '@/pages/companyPage/ui/UserCompaniesList'
+import CompanyDetails from '@/views/companyPage/ui/CompanyDetails'
+import UserCompaniesList from '@/views/companyPage/ui/UserCompaniesList'
 
 export default function Company() {
   const [isOpen, setIsOpen] = useState(false)

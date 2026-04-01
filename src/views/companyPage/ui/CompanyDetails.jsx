@@ -1,4 +1,4 @@
-import AddUserToCompany from '@/pages/companyPage/ui/AddUserToCompany'
+import AddUserToCompany from '@/views/companyPage/ui/AddUserToCompany'
 import {
   Box,
   Heading,
