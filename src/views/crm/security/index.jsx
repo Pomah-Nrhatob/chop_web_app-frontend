@@ -1,5 +1,5 @@
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
-import Security from '@/pages/crm/security/ui/Security'
+import Security from '@/views/crm/security/ui/Security'
 import { securityApi } from '@/shared/api/security/security-api'
 
 export default async function SecurityPage() {

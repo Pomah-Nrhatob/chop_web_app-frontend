@@ -1,4 +1,4 @@
-import { LoginForm } from '@/pages/auth/login/ui/Login'
+import { LoginForm } from '@/views/auth/login/ui/Login'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
 import Link from 'next/link'
 

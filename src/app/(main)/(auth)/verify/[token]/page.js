@@ -1,1 +1,1 @@
-export { default } from '@/pages/auth/verify/index'
+export { default } from '@/views/auth/verify/index'

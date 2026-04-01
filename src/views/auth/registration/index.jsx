@@ -1,4 +1,4 @@
-import { RegisterForm } from '@/pages/auth/registration/ui/Registration'
+import { RegisterForm } from '@/views/auth/registration/ui/Registration'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
 import Link from 'next/link'
 

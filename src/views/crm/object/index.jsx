@@ -1,5 +1,5 @@
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
-import Object from '@/pages/crm/object/ui/Object'
+import Object from '@/views/crm/object/ui/Object'
 import { objectApi } from '@/shared/api/object/object-api'
 
 export default async function ObjectPage() {

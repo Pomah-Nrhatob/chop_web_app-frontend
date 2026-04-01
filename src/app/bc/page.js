@@ -1,1 +1,1 @@
-export { default } from '@/pages/crm'
+export { default } from '@/views/crm'

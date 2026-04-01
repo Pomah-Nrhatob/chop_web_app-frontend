@@ -1,1 +1,1 @@
-export { default } from '@/pages/auth/forgot-password/index'
+export { default } from '@/views/auth/forgot-password/index'
