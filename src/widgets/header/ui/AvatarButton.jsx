@@ -48,7 +48,7 @@ export default function AvatarButton({
             </VStack>
           </Box>
 
-          <Box divideX="2px" />
+          <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
 
           {/* Кнопки навигации */}
           <Menu.Item onClick={onProfileClick} _hover={{ bg: 'gray.50' }} borderRadius="md" py={2}>
@@ -65,7 +65,7 @@ export default function AvatarButton({
             </Flex>
           </Menu.Item>
 
-          <Box divideX="2px" />
+          <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
 
           {/* Кнопка выхода */}
           <Menu.Item

@@ -128,8 +128,8 @@ export default function Company() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
               <DialogTrigger asChild>
-                <Button colorScheme="blue" leftIcon={<FiPlus />}>
-                  Создать компанию
+                <Button colorScheme="blue">
+                  <FiPlus /> Создать компанию
                 </Button>
               </DialogTrigger>
               <DialogBackdrop />
@@ -183,9 +183,11 @@ export default function Company() {
         <Spinner />
       ) : (
         <>
-          <CompanyDetails companyData={activeCompanyInfo} currentUserId={user?.id} />
+          {companies.length > 0 ? (
+            <CompanyDetails companyData={activeCompanyInfo} currentUserId={user?.id} />
+          ) : null}
+
           <UserCompaniesList
-            onSetActive={() => console.log('актив')}
             activeCompanyId={user?.activeCompanyId}
             companies={companies}
             currentUserId={user?.id}

@@ -10,8 +10,6 @@ import { FaBusinessTime } from 'react-icons/fa'
 import HeaderContainer from '@/widgets/header/ui/HeaderContainer'
 import AvatarButton from '@/widgets/header/ui/AvatarButton'
 import { SelectActiveCompany } from '@/widgets/header/ui/SelectActiveCompany'
-import { toaster } from '@/providers/chakraProvider/toaster'
-import { ThemeToggle } from '@/widgets/header/ui/ThemeToggle'
 
 export const Header = () => {
   const { user, isLoading } = useUser()
@@ -36,10 +34,12 @@ export const Header = () => {
             </Button>
 
             {!isLoading ? (
-              <SelectActiveCompany
-                activeCompany={user?.companies ? user?.activeCompanyId : null}
-                companies={user?.companies ? user?.companies : []}
-              />
+              <Box display={{ base: 'none', md: 'block' }}>
+                <SelectActiveCompany
+                  activeCompany={user?.companies ? user?.activeCompanyId : null}
+                  companies={user?.companies ? user?.companies : []}
+                />
+              </Box>
             ) : (
               <Text color="fg.muted" fontSize="sm">
                 Загрузка...

@@ -1,26 +1,54 @@
-import AddUserToCompany from '@/views/companyPage/ui/AddUserToCompany'
 import {
   Box,
   Heading,
   VStack,
   HStack,
   Text,
-  Button,
   Badge,
   IconButton,
   Avatar,
-  Menu,
+  Select,
+  createListCollection,
 } from '@chakra-ui/react'
+import { useState } from 'react'
+import { FiTrash2, FiUser } from 'react-icons/fi'
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
+import { useDeleteUserCompany, useUpdateUserCompany } from '@/features/company/api/use-company'
+import AddUserToCompany from '@/views/companyPage/ui/AddUserToCompany'
+import { Tooltip } from '@/components/ui/tooltip'
+import { ConfirmActionDialog } from '@/components/ui/ConfirmActionDialog'
 
-import { FiTrash2, FiEdit2, FiMoreVertical, FiUser } from 'react-icons/fi'
+const roleCollection = createListCollection({
+  items: [
+    { label: 'USER', value: 'USER' },
+    { label: 'MANAGER', value: 'MANAGER' },
+  ],
+  itemToString: (item) => item.label,
+  itemToValue: (item) => item.value,
+})
 
 const CompanyDetails = ({ companyData, currentUserId }) => {
   const { name, createdAt, users = [] } = companyData || {}
 
+  const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false)
+  const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+
+  const { mutate: deleteUser, isPending: isPendingDeleteUser } = useDeleteUserCompany()
+  const { mutate: updateUser, isPending: isPendingUpdateUser } = useUpdateUserCompany()
+
+  const handleDeleteUser = () => {
+    deleteUser(selectedUser)
+  }
+
+  const handleUpdateRole = () => {
+    updateUser(selectedUser)
+    setIsOpenUpdateDialog(false)
+  }
+
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={5} boxShadow="md">
-      <VStack align="start" spacing={4} w="100%">
-        {/* Информация о компании */}
+      <VStack display="flex" w="100%">
         <Box w="100%">
           <HStack justify="space-between" w="100%">
             <Heading size="md">{name || 'Название не указано'}</Heading>
@@ -35,85 +63,132 @@ const CompanyDetails = ({ companyData, currentUserId }) => {
 
         <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
 
-        {/* Список сотрудников */}
         <VStack align="start" w="100%" spacing={3}>
-          <Heading size="sm">Сотрудники:</Heading>
-          {users && Array.isArray(users) && users.length > 0 ? (
-            users.map((member) => {
-              const isCurrentUser = member.user?.id === currentUserId
-              return (
-                <HStack
-                  _hover={{ backgroundColor: 'gray.100' }}
-                  key={member.id}
-                  justify="space-between"
-                  w="100%"
-                >
-                  <Box flex="1">
+          <Heading mb={5} size="sm">
+            Сотрудники:
+          </Heading>
+
+          <Box display="flex" gap={5} flexDirection="column" w="full">
+            {users?.length > 0 ? (
+              users.map((member) => {
+                const isCurrentUser = member.user?.id === currentUserId
+
+                return (
+                  <HStack
+                    _hover={{ backgroundColor: 'gray.100' }}
+                    key={member.id}
+                    justify="space-between"
+                    w="100%"
+                  >
+                    <Box flex="1">
+                      <HStack spacing={3}>
+                        <Avatar.Root size="sm">
+                          <Avatar.Fallback>
+                            <FiUser />
+                          </Avatar.Fallback>
+                        </Avatar.Root>
+
+                        <Box>
+                          <Text fontWeight="medium">
+                            {member.user?.name} {member.user?.surname}
+                          </Text>
+                          <Text fontSize="sm" color="gray.500">
+                            {member.user?.email}
+                          </Text>
+                        </Box>
+                      </HStack>
+                    </Box>
+
                     <HStack spacing={3}>
-                      <Avatar.Root size="sm">
-                        <Avatar.Fallback>
-                          <FiUser />
-                        </Avatar.Fallback>
-                      </Avatar.Root>
+                      {isCurrentUser ? (
+                        <Badge colorScheme="blue" variant="subtle" fontSize="sm">
+                          Это вы
+                        </Badge>
+                      ) : (
+                        <>
+                          <Select.Root
+                            collection={roleCollection}
+                            value={[member.role]}
+                            onValueChange={(details) => {
+                              setSelectedUser({ userId: member.user.id, role: details.value[0] })
+                              setIsOpenUpdateDialog(true)
+                            }}
+                            disabled={isPendingUpdateUser || isCurrentUser}
+                          >
+                            <Select.HiddenSelect />
+                            <Select.Control>
+                              <Select.Trigger size="sm" width="120px">
+                                <Select.ValueText fontSize="sm" placeholder="Роль" />
+                                <Select.IndicatorGroup>
+                                  <Select.Indicator color="fg.muted" fontSize="sm" />
+                                </Select.IndicatorGroup>
+                              </Select.Trigger>
+                            </Select.Control>
 
-                      <Box>
-                        <Text fontWeight="medium">
-                          {member.user?.name} {member.user?.surname}
-                        </Text>
-                        <Text fontSize="sm" color="gray.500">
-                          {member.user?.email}
-                        </Text>
-                      </Box>
-                    </HStack>
-                  </Box>
-
-                  <Box>
-                    <Badge colorScheme={member.role === 'ADMIN' ? 'purple' : 'gray'}>
-                      {member.role}
-                    </Badge>
-
-                    {isCurrentUser ? (
-                      <Badge ml={2} colorScheme="blue" variant="subtle">
-                        Это вы
-                      </Badge>
-                    ) : (
-                      <Menu.Root placement="bottom-end">
-                        <Menu.Trigger asChild>
-                          <IconButton
-                            icon={<FiMoreVertical />}
-                            variant="outline"
-                            size="sm"
-                            ml={2}
-                          />
-                        </Menu.Trigger>
-                        <Menu.Positioner>
-                          <Menu.Content>
-                            <Menu.Item onClick={() => alert(`Изменить роль ${member.user?.name}`)}>
-                              <Menu.ItemStartIcon as={FiEdit2} />
-                              <Menu.ItemText>Изменить роль</Menu.ItemText>
-                            </Menu.Item>
-                            <Menu.Separator />
-                            <Menu.Item
+                            <Select.Positioner>
+                              <Select.Content>
+                                {roleCollection.items.map((item) => (
+                                  <Select.Item key={item.value} item={item}>
+                                    {item.label}
+                                  </Select.Item>
+                                ))}
+                              </Select.Content>
+                            </Select.Positioner>
+                          </Select.Root>
+                          <Tooltip content="Удалить пользователя из компании">
+                            <IconButton
+                              aria-label="Удалить пользователя"
+                              size="sm"
+                              colorScheme="red"
+                              variant="ghost"
                               color="red.500"
-                              onClick={() => alert(`Удалить ${member.user?.name}`)}
+                              onClick={() => {
+                                setSelectedUser(member.user.id)
+                                setIsOpenDeleteDialog(true)
+                              }}
+                              _hover={{ color: 'red.600' }}
                             >
-                              <Menu.ItemStartIcon as={<FiTrash2 />} />
-                              <Menu.ItemText>Удалить сотрудника</Menu.ItemText>
-                            </Menu.Item>
-                          </Menu.Content>
-                        </Menu.Positioner>
-                      </Menu.Root>
-                    )}
-                  </Box>
-                </HStack>
-              )
-            })
-          ) : (
-            <Text color="gray.500">Нет сотрудников</Text>
-          )}
+                              <FiTrash2 />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
+                    </HStack>
+                  </HStack>
+                )
+              })
+            ) : (
+              <Text color="gray.500">Нет сотрудников</Text>
+            )}
+          </Box>
         </VStack>
+
+        <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
+        <AddUserToCompany companyData={companyData} />
       </VStack>
-      <AddUserToCompany />
+
+      <ConfirmDeleteDialog
+        message="Вы уверены, что хотите удалить пользователя из компании? Это действие нельзя отменить."
+        isOpen={isOpenDeleteDialog}
+        onClose={() => {
+          setIsOpenDeleteDialog(false)
+          setSelectedUser(null)
+        }}
+        onConfirm={handleDeleteUser}
+        isLoading={isPendingDeleteUser}
+      />
+
+      <ConfirmActionDialog
+        isOpen={isOpenUpdateDialog}
+        onClose={() => {
+          setIsOpenUpdateDialog(false)
+          setSelectedUser(null)
+        }}
+        onConfirm={handleUpdateRole}
+        isLoading={isPendingUpdateUser}
+        message="Вы уверены, что хотите изменить роль пользователя?"
+        confirmText="Подтвердить"
+      />
     </Box>
   )
 }

@@ -55,6 +55,9 @@ const UserCompaniesList = ({ companies = [], currentUserId, activeCompanyId, onS
           <Heading size="md">Мои компании</Heading>
         </HStack>
 
+        <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
+
+        <Box></Box>
         {companies.length > 0 ? (
           companies.map((item) => {
             const { id: membershipId, role, company } = item

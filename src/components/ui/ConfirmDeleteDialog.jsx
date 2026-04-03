@@ -40,7 +40,7 @@ export const ConfirmDeleteDialog = ({
             </Dialog.Body>
           </Box>
 
-          <Dialog.Footer gap={3} flexDirection={{ base: 'column', sm: 'row' }}>
+          <Dialog.Footer gap={3}>
             <Button variant="outline" onClick={onClose} isDisabled={isLoading}>
               <Icon as={FiX} /> {cancelText}
             </Button>

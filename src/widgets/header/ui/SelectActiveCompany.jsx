@@ -33,7 +33,7 @@ export function SelectActiveCompany({ companies = [], activeCompany }) {
   }
 
   return (
-    <Box minW="200px">
+    <Box w={{ base: '150px', md: '250px' }}>
       <Flex align="center" gap={1.5}>
         <NativeSelect.Root size="sm" flex="1">
           <NativeSelect.Field
