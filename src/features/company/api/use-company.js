@@ -115,8 +115,49 @@ export const useUpdateUserCompany = () => {
     mutationFn: (data) => companyApi.updateUserCompany(data),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY })
+      toaster.create({
+        title: 'Сотрудник в компании изменен',
+        type: 'success',
+        duration: 3000,
+      })
+
+      queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
+    },
+    onError: (error) => {
+      toaster.create({
+        title: 'Ошибка',
+        description: error.message || 'Неизвестная ошибка, повторите попытку',
+        type: 'error',
+        duration: 3000,
+      })
+    },
+  })
+}
+
+export const useAddUserCompany = (additionalOnSuccess) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data) => companyApi.addUserCompany(data),
+    onSuccess: () => {
+      additionalOnSuccess?.()
+
+      toaster.create({
+        title: 'Сотрудник добавлен в компанию',
+        type: 'success',
+        duration: 3000,
+      })
+
+      queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
+    },
+    onError: (error) => {
+      additionalOnSuccess?.()
+      toaster.create({
+        title: 'Ошибка',
+        description: error.message || 'Неизвестная ошибка, повторите попытку',
+        type: 'error',
+        duration: 3000,
+      })
     },
   })
 }
@@ -129,8 +170,21 @@ export const useDeleteUserCompany = () => {
     mutationFn: (userId) => companyApi.deleteUserCompany(userId),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY })
+      toaster.create({
+        title: 'Сотрудник удален из компании',
+        type: 'success',
+        duration: 3000,
+      })
+
+      queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
+    },
+    onError: (error) => {
+      toaster.create({
+        title: 'Ошибка',
+        description: error.message || 'Неизвестная ошибка, повторите попытку',
+        type: 'error',
+        duration: 3000,
+      })
     },
   })
 }
