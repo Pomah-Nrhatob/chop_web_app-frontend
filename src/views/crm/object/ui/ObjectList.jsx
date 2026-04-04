@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
-import { Stack, Text } from '@chakra-ui/react'
+import { Stack, Text, HStack, Box, Button } from '@chakra-ui/react'
+import { LuFilter, LuChevronDown, LuChevronUp } from 'react-icons/lu'
 import {
   DialogRoot,
   DialogContent,
@@ -11,79 +11,97 @@ import {
   DialogCloseTrigger,
 } from '@/components/ui/dialog'
 
-import { useGetObjects } from '@/features/object/api/use-get-objects'
-import { useDeleteObject } from '@/features/object/api/use-delete-object'
 import { ObjectItem } from './ObjectItem'
 import { ObjectDetails } from './ObjectDetails'
 import { ObjectFilters } from './ObjectFilters'
 import ObjectForm from './ObjectForm'
-
-const INITIAL_FILTERS = {
-  search: '',
-  sortBy: 'createdAt',
-  sortOrder: 'desc',
-  page: 1,
-  limit: 10,
-}
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
+import { useObjectList } from '../hooks.js/useObjectLits'
+import { INITIAL_FILTERS_OBJECTS } from '../constants/INITIAL_FILTERS_OBJECTS'
+import { PaginationList } from '@/components/ui/PaginationList'
+import { TableList } from '@/components/ui/TableList'
 
 export default function ObjectList() {
-  const [selectedId, setSelectedId] = useState(null)
-  const [editingObject, setEditingObject] = useState(null)
-  const [filters, setFilters] = useState(INITIAL_FILTERS)
-
-  const { data: objects, isLoading } = useGetObjects(filters)
-  const { mutate: deleteObject, isPending, variables } = useDeleteObject()
-
-  const selectedObject = useMemo(
-    () => objects?.find((s) => s.id === selectedId),
-    [objects, selectedId]
-  )
-
-  const handleFilterChange = useCallback((key, value) => {
-    setFilters((prev) => {
-      if (typeof value === 'object' && value !== null) {
-        return { ...prev, ...value, page: 1 }
-      }
-
-      return { ...prev, [key]: value, page: 1 }
-    })
-  }, [])
-
-  const resetFilters = useCallback(() => setFilters(INITIAL_FILTERS), [])
+  const {
+    selectedId,
+    setSelectedId,
+    editingObject,
+    setEditingObject,
+    openDeleteDialog,
+    setOpenDeleteDialog,
+    showFilters,
+    setShowFilters,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isPending,
+    filters,
+    resetFilters,
+    handleFilterChange,
+    isLoading,
+    objects,
+    totalItems,
+    totalPages,
+    selectedObject,
+  } = useObjectList(INITIAL_FILTERS_OBJECTS)
 
   return (
-    <Stack gap={6}>
-      <ObjectFilters filters={filters} onFilterChange={handleFilterChange} onReset={resetFilters} />
+    <Stack gap={4}>
+      <HStack justify="space-between" align="center">
+        <Text fontSize="xl" fontWeight="bold">
+          Объекты охраны
+        </Text>
 
-      <Stack gap={4}>
-        {isLoading ? (
-          <Text textAlign="center" py={10} color="gray.500">
-            Загрузка данных...
-          </Text>
-        ) : objects?.length > 0 ? (
-          objects.map((o) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          leftIcon={<LuFilter />}
+        >
+          {showFilters ? 'Скрыть фильтры' : 'Показать фильтры'}
+          {showFilters ? <LuChevronUp /> : <LuChevronDown />}
+        </Button>
+      </HStack>
+
+      {showFilters && (
+        <Box p={4} borderWidth="1px" borderRadius="md" bg="gray.50/50">
+          <ObjectFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onReset={resetFilters}
+          />
+        </Box>
+      )}
+
+      <Stack gap={4} opacity={isLoading ? 0.6 : 1} transition="opacity 0.2s">
+        <TableList
+          isLoading={isLoading}
+          items={objects}
+          emptyText="Объекты не найдены"
+          headers={[{ title: 'Название объекта' }, { title: 'Действия', textAlign: 'end' }]}
+          renderRow={(o) => (
             <ObjectItem
               key={o.id}
               object={o}
-              onDelete={deleteObject}
               onDetails={setSelectedId}
               onEdit={setEditingObject}
-              isDeleting={isPending && variables === o.id}
+              setDeleteTarget={setDeleteTarget}
+              setOpenDeleteDialog={setOpenDeleteDialog}
+              isDeleting={isPending && deleteTarget === o.id}
             />
-          ))
-        ) : (
-          <Text textAlign="center" py={10} color="gray.400">
-            Объекты не найдены
-          </Text>
-        )}
+          )}
+        />
+
+        <PaginationList
+          totalItems={totalItems}
+          limit={filters.limit}
+          pageList={filters.page}
+          handleFilterChange={handleFilterChange}
+          totalPages={totalPages}
+        />
       </Stack>
 
-      {/* 3. МОДАЛКА ПРОСМОТРА (ObjectDetails) */}
-      <DialogRoot
-        open={!!selectedId}
-        onOpenChange={(e) => !e.open && setSelectedId(null)}
-        size="md"
-      >
+      <DialogRoot open={!!selectedId} onOpenChange={(e) => !e.open && setSelectedId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Карточка объекта</DialogTitle>
@@ -95,12 +113,7 @@ export default function ObjectList() {
         </DialogContent>
       </DialogRoot>
 
-      {/* 4. МОДАЛКА РЕДАКТИРОВАНИЯ (ObjectForm) */}
-      <DialogRoot
-        open={!!editingObject}
-        onOpenChange={(e) => !e.open && setEditingObject(null)}
-        size="lg"
-      >
+      <DialogRoot open={!!editingObject} onOpenChange={(e) => !e.open && setEditingObject(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Редактирование данных</DialogTitle>
@@ -111,6 +124,13 @@ export default function ObjectList() {
           <DialogCloseTrigger />
         </DialogContent>
       </DialogRoot>
+
+      <ConfirmDeleteDialog
+        onClose={() => setOpenDeleteDialog(false)}
+        isOpen={openDeleteDialog}
+        onConfirm={confirmDelete}
+        isLoading={isPending}
+      />
     </Stack>
   )
 }
