@@ -41,11 +41,11 @@ export const ConfirmDeleteDialog = ({
           </Box>
 
           <Dialog.Footer gap={3}>
-            <Button variant="outline" onClick={onClose} isDisabled={isLoading}>
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               <Icon as={FiX} /> {cancelText}
             </Button>
 
-            <Button colorScheme="red" onClick={onConfirm} isLoading={isLoading}>
+            <Button colorScheme="red" onClick={onConfirm} disabled={isLoading} loading={isLoading}>
               <Icon as={FiTrash2} /> {confirmText}
             </Button>
           </Dialog.Footer>

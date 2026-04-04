@@ -1,35 +1,30 @@
 'use client'
 
+import { ConfirmActionDialog } from '@/components/ui/ConfirmActionDialog'
 import { useChangeActiveCompany } from '@/features/users/api/use-user'
-import { NativeSelect, Box, Flex, Text, Button } from '@chakra-ui/react'
+import { NativeSelect, Box, Flex } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
-import { FiChevronDown, FiCheck, FiCheckCircle } from 'react-icons/fi'
+import { FiChevronDown } from 'react-icons/fi'
 
 export function SelectActiveCompany({ companies = [], activeCompany }) {
   const validCompanies = (companies || []).filter((c) => c?.id && typeof c.id === 'string')
 
   const initialValue = validCompanies.length > 0 ? activeCompany : null
   const [value, setValue] = useState(initialValue)
-  const [isChange, setIsChange] = useState(false)
+  const [selectedCompany, setSelectedCompany] = useState(null)
+  const [isOpenConfirm, setIsOpenConfirm] = useState(false)
 
   useEffect(() => {
     setValue(activeCompany)
   }, [activeCompany])
 
-  useEffect(() => {
-    if (value !== activeCompany) {
-      setIsChange(true)
-      return
-    }
-    setIsChange(false)
-  }, [value])
-
   const { changeActiveCompany, isLoading } = useChangeActiveCompany(() => {
-    setIsChange(false)
+    setIsOpenConfirm(false)
+    setSelectedCompany(null)
   })
 
   const handleChangeActiveCompany = () => {
-    changeActiveCompany({ activeCompanyId: value })
+    changeActiveCompany({ activeCompanyId: selectedCompany })
   }
 
   return (
@@ -37,7 +32,10 @@ export function SelectActiveCompany({ companies = [], activeCompany }) {
       <Flex align="center" gap={1.5}>
         <NativeSelect.Root size="sm" flex="1">
           <NativeSelect.Field
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+              setSelectedCompany(e.target.value)
+              setIsOpenConfirm(true)
+            }}
             value={value || ''}
             bg="bg.surface"
             border="1px solid"
@@ -64,18 +62,18 @@ export function SelectActiveCompany({ companies = [], activeCompany }) {
           </NativeSelect.Indicator>
         </NativeSelect.Root>
 
-        <Button
-          loading={isLoading}
-          size="xs"
-          variant="ghost"
-          onClick={handleChangeActiveCompany}
-          disabled={!isChange || !value}
-          color={isChange ? 'green.500' : 'gray.300'}
-          p={0}
-          minW="auto"
-        >
-          {isChange ? <FiCheck /> : <FiCheckCircle />}
-        </Button>
+        <ConfirmActionDialog
+          isOpen={isOpenConfirm}
+          onClose={() => {
+            ;(setIsOpenConfirm(false), setSelectedCompany(null))
+          }}
+          onConfirm={() => {
+            handleChangeActiveCompany()
+          }}
+          isLoading={isLoading}
+          title="Подтвердите смену компании"
+          message="Вы точно хотите сменить активную компанию?"
+        />
       </Flex>
     </Box>
   )

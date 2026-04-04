@@ -1,3 +1,4 @@
+// src/components/UserList.jsx
 'use client'
 
 import {
@@ -11,8 +12,8 @@ import {
   Text,
   Box,
 } from '@chakra-ui/react'
-import { useEffect, useMemo, useState } from 'react'
-import { FiPlus, FiSearch, FiX, FiCheck } from 'react-icons/fi'
+import { useEffect, useMemo, useState, useRef } from 'react'
+import { FiPlus, FiSearch, FiX } from 'react-icons/fi'
 
 export const UserList = ({
   users,
@@ -25,8 +26,10 @@ export const UserList = ({
   const [searchInput, setSearchInput] = useState('')
   const [open, setOpen] = useState(false)
 
+  const debounceTimer = useRef(null)
+
   const companyUserIds = useMemo(() => {
-    return new Set((companyUsers ?? []).map((user) => user.user.id.toString()))
+    return new Set((companyUsers || []).map((user) => user.user.id.toString()))
   }, [companyUsers])
 
   const { collection, set } = useListCollection({
@@ -36,7 +39,7 @@ export const UserList = ({
   })
 
   useEffect(() => {
-    const enriched = (users ?? []).map((user) => {
+    const enriched = (users || []).map((user) => {
       return {
         ...user,
         disabled: companyUserIds.has(user.id.toString()),
@@ -54,20 +57,48 @@ export const UserList = ({
     }
   }, [resetSignal, set])
 
-  const handleSearch = async () => {
-    try {
-      await searchUsers(searchInput)
-      setOpen(true)
-    } catch (error) {
-      console.error(error)
+  const debouncedSearch = (value) => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current)
     }
+
+    debounceTimer.current = setTimeout(async () => {
+      if (value.trim()) {
+        try {
+          await searchUsers(value)
+          setOpen(true)
+        } catch (error) {
+          console.error('Ошибка поиска:', error)
+        }
+      } else {
+        set([])
+      }
+    }, 1000)
+  }
+
+  const handleInputValueChange = (details) => {
+    const newValue = details.inputValue
+    setSearchInput(newValue)
+
+    debouncedSearch(newValue)
   }
 
   const handleClear = () => {
     setSearchInput('')
     set([])
     setOpen(false)
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current)
+    }
   }
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current)
+      }
+    }
+  }, [])
 
   return (
     <Combobox.Root
@@ -79,7 +110,7 @@ export const UserList = ({
       open={open}
       openOnClick
       onOpenChange={(details) => setOpen(details.open)}
-      onInputValueChange={(details) => setSearchInput(details.inputValue)}
+      onInputValueChange={handleInputValueChange}
       onValueChange={(details) => {
         const id = details.value?.[0]
         const user = collection.items.find((item) => item.id.toString() === id && !item.disabled)
@@ -91,13 +122,7 @@ export const UserList = ({
       <Combobox.Control>
         <Combobox.Input onFocus={() => setOpen(true)} />
         <Combobox.IndicatorGroup>
-          <IconButton
-            size="sm"
-            variant="ghost"
-            aria-label="Поиск"
-            onClick={handleSearch}
-            disabled={isLoading}
-          >
+          <IconButton size="sm" variant="ghost" aria-label="Поиск" disabled={isLoading}>
             {isLoading ? <Spinner size="xs" /> : <FiSearch />}
           </IconButton>
           <IconButton size="sm" variant="ghost" aria-label="Очистить поиск" onClick={handleClear}>
@@ -115,11 +140,7 @@ export const UserList = ({
 
             {collection.items.map((person) => {
               return (
-                <Combobox.Item
-                  item={person}
-                  key={person.id}
-                  disabled={person.disabled} // важный флаг
-                >
+                <Combobox.Item item={person} key={person.id} disabled={person.disabled}>
                   <Stack gap={0}>
                     <Span textStyle="sm" fontWeight="medium">
                       {person.name} {person.surname}
