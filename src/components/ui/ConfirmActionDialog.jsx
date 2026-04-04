@@ -44,7 +44,7 @@ export const ConfirmActionDialog = ({
           </Box>
 
           <Dialog.Footer gap={3}>
-            <Button variant="outline" onClick={onClose} isDisabled={isLoading}>
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               <Icon as={FiX} /> {cancelText}
             </Button>
 
@@ -52,7 +52,8 @@ export const ConfirmActionDialog = ({
               colorScheme={confirmButtonColor}
               variant={confirmButtonVariant}
               onClick={onConfirm}
-              isLoading={isLoading}
+              disabled={isLoading}
+              loading={isLoading}
             >
               <Icon as={FiCheck} /> {confirmText}
             </Button>
