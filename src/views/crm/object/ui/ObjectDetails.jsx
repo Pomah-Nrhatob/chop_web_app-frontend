@@ -1,6 +1,7 @@
 'use client'
 
-import { Stack, Box, Text, Separator, Flex } from '@chakra-ui/react'
+import { InfoSection } from '@/components/ui/InfoCard'
+import { Stack, Box, Text, Separator } from '@chakra-ui/react'
 
 export const ObjectDetails = ({ object }) => {
   if (!object) return null
@@ -17,14 +18,7 @@ export const ObjectDetails = ({ object }) => {
 
       <Separator />
 
-      <Box>
-        <Text fontWeight="bold" mb={1} fontSize="sm">
-          Описание
-        </Text>
-        <Text fontSize="sm" color="black.600">
-          {description || 'Нет'}
-        </Text>
-      </Box>
+      <InfoSection label="Описание" value={description} color="black.600" />
 
       <Text fontSize="xs" color="gray.400">
         В базе с: {new Date(createdAt).toLocaleDateString()}

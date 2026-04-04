@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { securityApi } from '@/shared/api/security/security-api'
 import { toaster } from '@/providers/chakraProvider/toaster'
 
-export const useDeleteSecurity = () => {
+export const useDeleteSecurity = (onSuccessCallback) => {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -15,6 +15,7 @@ export const useDeleteSecurity = () => {
         description: 'Охранник успешно удален из базы',
         type: 'success',
       })
+      if (onSuccessCallback) onSuccessCallback()
     },
     onError: (err) => {
       toaster.create({

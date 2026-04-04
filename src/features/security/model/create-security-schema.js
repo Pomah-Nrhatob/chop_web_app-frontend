@@ -1,24 +1,34 @@
 import { z } from 'zod'
 
-export const createSecuritySchema = z.object({
-  // Обязательные поля
-  name: z.string().min(1, 'Имя обязательно'),
-  surname: z.string().min(1, 'Фамилия обязательна'),
+const preprocessNumber = (val) => {
+  // 1. Если поле пустое (строка) — возвращаем undefined
+  if (val === '') return undefined
+  // 2. Если React Hook Form прислал NaN (из-за valueAsNumber) — возвращаем undefined
+  if (typeof val === 'number' && isNaN(val)) return undefined
+  // 3. В остальных случаях оставляем как есть для дальнейшей валидации
+  return val
+}
 
-  // Опциональные поля
-  age: z.number().int().positive().optional(),
+export const createSecuritySchema = z.object({
+  surname: z.string().min(1, 'Фамилия обязательна'),
+  name: z.string().min(1, 'Имя обязательно'),
 
   patronymic: z.string().optional(),
-
-  hasLicense: z.boolean().optional(),
-
   personality: z.string().optional(),
-
   healthStatus: z.string().optional(),
-
   chronicDiseases: z.string().optional(),
 
-  shiftSalary: z.number().int().min(0, 'Зарплата не может быть отрицательной').optional(),
+  age: z.preprocess(
+    preprocessNumber,
+    z.coerce.number().int().min(0, 'Минимум 0 лет').max(100).optional()
+  ),
 
-  statusId: z.number().int().optional(),
+  shiftSalary: z.preprocess(
+    preprocessNumber,
+    z.coerce.number().min(0, 'Зарплата не может быть отрицательной').optional()
+  ),
+
+  statusId: z.preprocess(preprocessNumber, z.coerce.number().int().optional()),
+
+  hasLicense: z.boolean().default(false),
 })
