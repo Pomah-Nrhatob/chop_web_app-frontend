@@ -32,5 +32,6 @@ export const config = {
     '/verify',
     '/company',
     '/profile',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 }
