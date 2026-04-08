@@ -3,6 +3,7 @@ import { AuthSessionSync } from '@/providers/authSessionSync/provider'
 import { Provider } from '@/providers/chakraProvider/provider'
 import { SessionProviderContainer } from '@/providers/sessionProvider/provider'
 import { QueryProvider } from '@/providers/queryProvider/provider'
+import { Header } from '@/widgets/header'
 
 export const metadata = {
   title: 'Create Next App',
@@ -18,7 +19,10 @@ export default async function RootLayout({ children }) {
         <Provider>
           <SessionProviderContainer session={session}>
             <QueryProvider>
-              <AuthSessionSync>{children}</AuthSessionSync>
+              <AuthSessionSync>
+                <Header />
+                {children}
+              </AuthSessionSync>
             </QueryProvider>
           </SessionProviderContainer>
         </Provider>
