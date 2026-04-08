@@ -34,16 +34,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Установите переменную для указания базового пути
-ENV NEXT_PUBLIC_BASE_PATH=""
-
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Копируем только то, что нужно для standalone приложения
+# Копируем все файлы standalone приложения
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/. ./
+
+# Копируем public директорию
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./ 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
