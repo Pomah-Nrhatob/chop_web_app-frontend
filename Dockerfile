@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:25-alpine3.21 AS base
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
@@ -37,19 +37,11 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Копируем standalone сервер
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/. ./
-
-# Копируем статику Next и public (важно, чтобы лежали в нужных местах)
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-# Создаём .next, если его ещё нет
-RUN mkdir -p .next
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# опционально, если нужен BUILD_ID
-COPY --from=builder --chown=nextjs:nodejs /app/.next/BUILD_ID ./.next/BUILD_ID
 
 USER nextjs
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["node", ".next/standalone/server.js"]
