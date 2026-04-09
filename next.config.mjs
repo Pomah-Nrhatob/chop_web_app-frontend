@@ -2,6 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   experimental: {
+    appDir: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },
 }
