@@ -64,6 +64,19 @@ export const authOptions = {
       return session
     },
   },
+  trustHost: true,
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`, // префикс __Secure требует HTTPS
+      options: {
+        httpOnly: true,
+        sameSite: 'lax', // или 'strict', но не 'none' без Secure
+        path: '/',
+        secure: true, // обязательно true на HTTPS
+        domain: '.твой-домен.ru', // опционально: для поддоменов
+      },
+    },
+  },
   pages: {
     signIn: '/login',
     signOut: '/login',
