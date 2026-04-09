@@ -37,12 +37,17 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Копируем все файлы standalone приложения
+# Копируем standalone сервер
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/. ./
 
-# Копируем public директорию
-COPY --from=builder /app/public ./public
+# Копируем статику Next и public (важно, чтобы лежали в нужных местах)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# Создаём .next, если его ещё нет
+RUN mkdir -p .next
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# опционально, если нужен BUILD_ID
+COPY --from=builder --chown=nextjs:nodejs /app/.next/BUILD_ID ./.next/BUILD_ID
 
 USER nextjs
 EXPOSE 3000
