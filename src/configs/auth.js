@@ -67,13 +67,12 @@ export const authOptions = {
   trustHost: true,
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`, // префикс __Secure требует HTTPS
+      name: `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax', // или 'strict', но не 'none' без Secure
         path: '/',
-        secure: true, // обязательно true на HTTPS
-        domain: '.твой-домен.ru', // опционально: для поддоменов
+        secure: false, // ❌ false, потому что вы тестируете по HTTP
       },
     },
   },
