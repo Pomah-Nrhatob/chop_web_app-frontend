@@ -43,6 +43,8 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
       await refreshUser()
 
       queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ['objects'] })
+      queryClient.invalidateQueries({ queryKey: ['securities'] })
 
       additionalOnSuccess?.()
 

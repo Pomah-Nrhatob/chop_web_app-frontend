@@ -2,7 +2,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
-import { USER_QUERY_KEY } from '@/features/users/api/use-user'
+import { authApi } from '@/shared/api/auth/auth-api'
+import { cachedTokens, clearUserSession, USER_QUERY_KEY } from '@/shared/api/api'
 
 export const useLogout = () => {
   const router = useRouter()
@@ -10,34 +11,36 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      try {
+        // 1. Backend logout с refresh_token из кэша
+        if (cachedTokens?.refreshToken) {
+          await authApi.logout({ refresh_token: cachedTokens.refreshToken })
+        }
 
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error || 'Ошибка при выходе')
+        // 2. NextAuth logout (очищает JWT куки)
+        await signOut({ redirect: false })
+
+        // 3. Очищаем фронт состояние
+        clearUserSession()
+        queryClient.removeQueries({ queryKey: USER_QUERY_KEY })
+        queryClient.clear()
+
+        console.log('✅ Полный logout завершён')
+      } catch (error) {
+        console.error('Backend logout error:', error)
+        // Продолжаем локальный logout даже при ошибке backend
+        await signOut({ redirect: false })
+        clearUserSession()
+        queryClient.clear()
       }
-
-      const data = await res.json()
-
-      await signOut({ redirect: false })
-
-      return data
     },
     onSuccess: () => {
-      // queryClient.clear()
       router.push('/login')
+      router.refresh()
     },
-    onError: (err) => {
-      console.error('Ошибка при выходе:', err)
-
-      signOut({ redirect: false }).finally(() => {
-        router.push('/login')
-      })
+    onError: () => {
+      router.push('/login')
+      router.refresh()
     },
   })
 }
