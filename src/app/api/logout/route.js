@@ -3,39 +3,24 @@ import { authApi } from '@/shared/api/auth/auth-api'
 
 export async function POST(request) {
   try {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+    // 1. Получаем JWT токен из NextAuth
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    })
 
-    if (!token) {
-      return new Response(
-        JSON.stringify({ error: 'Пользователь не авторизован (JWT токен отсутствует)' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+    if (!token?.refreshToken) {
+      return Response.json({ error: 'Refresh токен отсутствует' }, { status: 400 })
     }
 
-    const refreshToken = token.refreshToken
+    // 2. Инвалидируем refreshToken на бэкенде
+    await authApi.logout({ refresh_token: token.refreshToken })
 
-    if (!refreshToken) {
-      console.error('refreshToken не найден в JWT токене.')
-      return new Response(JSON.stringify({ error: 'Токен для инвалидации не найден' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    await authApi.logout({ refreshToken })
-
-    return new Response(JSON.stringify({ message: 'Выход выполнен успешно' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
+    return Response.json({
+      message: 'Выход выполнен успешно',
     })
   } catch (error) {
-    console.error('Ошибка при выходе:', error)
-    return new Response(JSON.stringify({ error: 'Внутренняя ошибка сервера при попытке выхода' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    console.error('Ошибка logout:', error)
+    return Response.json({ error: 'Ошибка сервера' }, { status: 500 })
   }
 }

@@ -1,6 +1,6 @@
+// configs/auth.ts
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { authApi } from '@/shared/api/auth/auth-api'
 import { REFRESH_TOKEN_BUFFER_MS } from '@/configs/data'
 
 export const authOptions = {
@@ -11,7 +11,6 @@ export const authOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-
       async authorize(credentials) {
         if (credentials?.userFromFrontend) {
           const userData = JSON.parse(credentials.userFromFrontend)
@@ -30,36 +29,52 @@ export const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // Инициализация токенов при первом входе
       if (user) {
         token.accessToken = user.accessToken
         token.refreshToken = user.refreshToken
         token.expiresAt = user.expiresAt
+        return token
       }
 
-      if (Date.now() + REFRESH_TOKEN_BUFFER_MS >= token.expiresAt) {
-        console.log('Access token истёк. Пытаемся обновить...')
-        try {
-          const refreshedTokens = await authApi.refresh({
-            refresh_token: token.refreshToken,
-          })
-
-          token.accessToken = refreshedTokens.access_token
-          token.expiresAt = new Date(refreshedTokens.expires_at).getTime()
-          token.refreshToken = refreshedTokens.refresh_token
-
-          console.log('Токен успешно обновлён.')
-        } catch (error) {
-          console.error('Ошибка обновления токена:', error)
-
-          return null
-        }
+      // Нет токенов вообще — выходим
+      if (!token.refreshToken || !token.accessToken) {
+        return { ...token, error: 'NoTokens' }
       }
 
+      // Нет времени истечения — выходим
+      if (!token.expiresAt) {
+        return { ...token, error: 'NoExpiresAt' }
+      }
+
+      // Токен ещё валиден — возвращаем как есть
+      if (Date.now() + REFRESH_TOKEN_BUFFER_MS < token.expiresAt) {
+        return token
+      }
+
+      // ❌ УБРАЛИ refresh отсюда! Теперь делает фронтенд
+      console.log('⚠️ Сервер не обновляет токены. Ждём фронтенд.')
       return token
     },
-    async session({ session, token, trigger }) {
-      session.user.accessToken = token.accessToken
-      session.user.expiresAt = token.expiresAt
+
+    async session({ session, token }) {
+      // Если ошибка в токене — чистим сессию
+      if (token.error) {
+        session.error = token.error
+        session.user = {
+          accessToken: null,
+          expiresAt: 0,
+          refreshToken: null,
+        }
+        return session
+      }
+
+      // Нормальная сессия — передаём все токены
+      session.user = {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        expiresAt: token.expiresAt,
+      }
 
       return session
     },
@@ -70,18 +85,20 @@ export const authOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax', // или 'strict', но не 'none' без Secure
+        sameSite: 'lax',
         path: '/',
-        secure: false, // ❌ false, потому что вы тестируете по HTTP
+        secure: process.env.NODE_ENV === 'production', // true в проде
       },
     },
   },
   pages: {
     signIn: '/login',
     signOut: '/login',
+    error: '/login',
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 дней для сессии
   },
 }
 
