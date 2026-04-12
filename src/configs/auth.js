@@ -87,8 +87,19 @@ export const authOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production', // true в проде
+        secure: false, // ✅ HTTP!
+        domain: '212.67.13.62', // 🔥 КРИТИЧНО для IP!
       },
+    },
+  },
+  csrfToken: {
+    name: `next-auth.csrf-token`,
+    options: {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      secure: false,
+      domain: '212.67.13.62', // 🔥 ТОЖЕ!
     },
   },
   pages: {
