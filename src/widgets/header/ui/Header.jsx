@@ -42,12 +42,14 @@ export const Header = () => {
             )}
 
             {!isLoading ? (
-              <Box display={{ base: 'none', md: 'block' }}>
-                <SelectActiveCompany
-                  activeCompany={user?.companies ? user?.activeCompanyId : null}
-                  companies={user?.companies ? user?.companies : []}
-                />
-              </Box>
+              !showCrmButton && (
+                <Box>
+                  <SelectActiveCompany
+                    activeCompany={user?.companies ? user?.activeCompanyId : null}
+                    companies={user?.companies ? user?.companies : []}
+                  />
+                </Box>
+              )
             ) : (
               <Text color="fg.muted" fontSize="sm">
                 Загрузка...
