@@ -5,15 +5,16 @@ import { SessionProviderContainer } from '@/providers/sessionProvider/provider'
 import { QueryProvider } from '@/providers/queryProvider/provider'
 import { Header } from '@/widgets/header'
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata = {
   title: 'Chop-CRM | Управление бизнесом',
   description: 'Управление бизнесом в твоем кармане',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 }
 
 export default async function RootLayout({ children }) {
