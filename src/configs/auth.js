@@ -1,7 +1,7 @@
 // configs/auth.ts
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { REFRESH_TOKEN_BUFFER_MS } from '@/configs/data'
+import { REFRESH_TOKEN_BUFFER_MS } from '@/configs/data' // если используется
 
 export const authOptions = {
   providers: [
@@ -22,14 +22,13 @@ export const authOptions = {
             expiresAt: expiresAtMs,
           }
         }
-
         throw new Error('Данные пользователя не предоставлены')
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Инициализация токенов при первом входе
+      // При логине сохраняем токены
       if (user) {
         token.accessToken = user.accessToken
         token.refreshToken = user.refreshToken
@@ -37,28 +36,16 @@ export const authOptions = {
         return token
       }
 
-      // Нет токенов вообще — выходим
-      if (!token.refreshToken || !token.accessToken) {
-        return { ...token, error: 'NoTokens' }
+      // Если нет refreshToken — ошибка
+      if (!token.refreshToken) {
+        return { ...token, error: 'NoRefreshToken' }
       }
 
-      // Нет времени истечения — выходим
-      if (!token.expiresAt) {
-        return { ...token, error: 'NoExpiresAt' }
-      }
-
-      // Токен ещё валиден — возвращаем как есть
-      if (Date.now() + REFRESH_TOKEN_BUFFER_MS < token.expiresAt) {
-        return token
-      }
-
-      // ❌ УБРАЛИ refresh отсюда! Теперь делает фронтенд
-      console.log('⚠️ Сервер не обновляет токены. Ждём фронтенд.')
+      // ✅ ВСЕГДА возвращаем актуальные токены (refresh происходит в axios)
       return token
     },
 
     async session({ session, token }) {
-      // Если ошибка в токене — чистим сессию
       if (token.error) {
         session.error = token.error
         session.user = {
@@ -69,7 +56,7 @@ export const authOptions = {
         return session
       }
 
-      // Нормальная сессия — передаём все токены
+      // ✅ Передаём токены в session.user
       session.user = {
         accessToken: token.accessToken,
         refreshToken: token.refreshToken,
@@ -82,13 +69,13 @@ export const authOptions = {
   trustHost: true,
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: `next-auth.session-token`, // ✅ Правильно для HTTP/dev
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: false, // ✅ HTTP!
-        domain: '212.67.13.62', // 🔥 КРИТИЧНО для IP!
+        domain: '212.67.13.62', // ✅ Раскомментируйте для IP!
       },
     },
   },
@@ -99,7 +86,7 @@ export const authOptions = {
       sameSite: 'lax',
       path: '/',
       secure: false,
-      domain: '212.67.13.62', // 🔥 ТОЖЕ!
+      domain: '212.67.13.62',
     },
   },
   pages: {
@@ -109,8 +96,8 @@ export const authOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 дней для сессии
+    maxAge: 30 * 24 * 60 * 60, // 30 дней
   },
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth(authOptions)
