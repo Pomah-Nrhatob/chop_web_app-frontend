@@ -61,7 +61,7 @@ import UserCompaniesList from '@/views/companyPage/ui/UserCompaniesList'
 
 export default function Company() {
   const [isOpen, setIsOpen] = useState(false)
-  const { companies, isLoading: isLoadingCompanies } = useCompanies()
+  const { companies = [], isLoading: isLoadingCompanies } = useCompanies()
   const {
     activeCompanyInfo,
     isLoading: isLoadingCompany,
@@ -183,7 +183,7 @@ export default function Company() {
         <Spinner />
       ) : (
         <>
-          {companies.length > 0 ? (
+          {companies?.length > 0 ? (
             <CompanyDetails companyData={activeCompanyInfo} currentUserId={user?.id} />
           ) : null}
 

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адаптивный Календарь: Grid + Список</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Desktop Grid */
+      .desktop-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+      }
+      .desktop-cell {
+        min-height: 100px;
+        padding: 12px;
+        background: white;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 3px solid transparent;
+      }
+      .desktop-cell:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      }
+      .desktop-cell.selected {
+        background: #dbeafe;
+        border-color: #3b82f6;
+      }
+      .desktop-cell.shift-present {
+        border-left: 5px solid #10b981;
+      }
+
+      /* Mobile List */
+      .mobile-list-item {
+        border-left: 4px solid transparent;
+        transition: all 0.2s;
+      }
+      .mobile-list-item:hover {
+        background: #f8fafc;
+        transform: translateX(4px);
+      }
+      .mobile-list-item.selected {
+        background: #dbeafe;
+        border-left-color: #3b82f6;
+      }
+      .mobile-list-item.shift-present {
+        border-left-color: #10b981;
+      }
+
+      .fab {
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+      }
+      #bottom-sheet {
+        max-height: 70vh;
+      }
+
+      @media (max-width: 768px) {
+        .desktop-only {
+          display: none !important;
+        }
+        .mobile-only {
+          display: block !important;
+        }
+      }
+      @media (min-width: 769px) {
+        .mobile-only {
+          display: none !important;
+        }
+        .desktop-only {
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Header (общий) -->
+    <div class="bg-white shadow-sm sticky top-0 z-30">
+      <div
+        class="p-4 lg:p-6 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4"
+      >
+        <div>
+          <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">График: Иванов И.И.</h1>
+          <p class="text-sm lg:text-base text-gray-600 hidden lg:block">Охранник / Объект А</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 lg:gap-4 items-stretch sm:items-center">
+          <div class="flex items-center gap-2 flex-1 lg:flex-none">
+            <button
+              onclick="prevMonth()"
+              class="p-3 lg:p-4 text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl lg:rounded-2xl font-semibold flex-1 sm:flex-none"
+            >
+              ‹ Пред. месяц
+            </button>
+            <span id="month-title" class="text-2xl lg:text-3xl font-bold px-4 whitespace-nowrap"
+              >Март 2026</span
+            >
+            <button
+              onclick="nextMonth()"
+              class="p-3 lg:p-4 text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl lg:rounded-2xl font-semibold flex-1 sm:flex-none"
+            >
+              След. месяц ›
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick selectors -->
+      <div class="px-4 lg:px-6 pb-4 lg:pb-6 bg-gray-50 border-t lg:border-none">
+        <div class="flex flex-wrap lg:flex-nowrap gap-3 lg:gap-4">
+          <label
+            class="flex items-center gap-2 p-2 lg:p-3 bg-white rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow flex-1 lg:flex-none"
+          >
+            <input type="checkbox" id="select-empty" onchange="selectDays('empty')" /> Только пустые
+            дни
+          </label>
+          <label
+            class="flex items-center gap-2 p-2 lg:p-3 bg-white rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow flex-1 lg:flex-none"
+          >
+            <input type="checkbox" id="select-all" onchange="selectDays('all')" /> Выделить все дни
+          </label>
+        </div>
+        <p class="text-sm lg:text-base text-gray-600 mt-3 px-1">
+          Выбрано дней: <span id="selected-count" class="font-bold text-lg">0</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Desktop: Большой Grid -->
+    <div class="desktop-only container mx-auto px-4 lg:px-8 max-w-7xl">
+      <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div class="desktop-grid gap-2 p-6 lg:p-8" id="desktop-grid">
+          <!-- Дни недели -->
+          <div class="col-span-7 flex gap-2 mb-6">
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl font-bold text-gray-800 text-center text-lg shadow-inner"
+            >
+              Понедельник
+            </div>
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl font-bold text-gray-700 text-center text-lg shadow-inner"
+            >
+              Вторник
+            </div>
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl font-bold text-gray-800 text-center text-lg shadow-inner"
+            >
+              Среда
+            </div>
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-red-50 to-red-100 rounded-2xl font-bold text-gray-700 text-center text-lg shadow-inner"
+            >
+              Четверг
+            </div>
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl font-bold text-gray-800 text-center text-lg shadow-inner"
+            >
+              Пятница
+            </div>
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-2xl font-bold text-gray-700 text-center text-lg shadow-inner"
+            >
+              Суббота
+            </div>
+            <div
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl font-bold text-gray-700 text-center text-lg shadow-inner"
+            >
+              Воскресенье
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile: Вертикальный список -->
+    <div
+      class="mobile-only px-4 pb-24 lg:pb-6 max-h-[calc(100vh-220px)] overflow-auto space-y-3"
+      id="mobile-list"
+    >
+      <!-- Динамически заполняется -->
+    </div>
+
+    <!-- FAB (только mobile) -->
+    <button
+      id="fab"
+      class="mobile-only fixed bottom-8 right-4 w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl shadow-2xl flex items-center justify-center text-xl font-bold fab z-50 shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all"
+    >
+      ✏️
+    </button>
+
+    <!-- Bottom Sheet (адаптивный) -->
+    <div
+      id="bottom-sheet"
+      class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 z-40"
+    >
+      <div class="p-6 lg:p-8 pt-16 lg:pt-20 max-h-[70vh] overflow-auto">
+        <div
+          class="absolute top-4 lg:top-6 left-1/2 transform -translate-x-1/2 w-12 lg:w-16 h-1.5 bg-gray-200 rounded-full mx-auto"
+        ></div>
+        <div class="mb-8">
+          <h3 class="text-2xl lg:text-3xl font-bold mb-2">Управление сменами</h3>
+          <p class="text-lg lg:text-xl text-gray-600">
+            Выбрано дней: <span id="sheet-count" class="font-bold text-2xl text-blue-600">0</span>
+          </p>
+        </div>
+
+        <div
+          class="mb-8 p-5 lg:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border-2 border-dashed border-blue-200"
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <input
+              type="date"
+              id="date-start"
+              class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl text-base lg:text-lg bg-white shadow-sm focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all"
+            />
+            <span
+              class="text-gray-400 font-mono text-lg lg:text-xl min-w-[2rem] text-center font-bold"
+              >—</span
+            >
+            <input
+              type="date"
+              id="date-end"
+              class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl text-base lg:text-lg bg-white shadow-sm focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all"
+            />
+          </div>
+          <p class="text-sm lg:text-base text-gray-600 text-center">
+            Или используйте выбранные дни
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <button
+            onclick="applyAction('shift-A')"
+            class="w-full p-5 lg:p-6 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-white rounded-3xl font-bold text-lg lg:text-xl shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            👮‍♂️ Объект А
+          </button>
+          <button
+            onclick="applyAction('shift-B')"
+            class="w-full p-5 lg:p-6 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 text-white rounded-3xl font-bold text-lg lg:text-xl shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            🏢 Объект Б
+          </button>
+          <button
+            onclick="applyAction('clear')"
+            class="w-full p-5 lg:p-6 bg-gradient-to-r from-rose-400 to-red-500 text-white rounded-3xl font-bold text-lg lg:text-xl shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            ❌ Отменить все смены
+          </button>
+          <button
+            onclick="clearSelection()"
+            class="w-full p-5 lg:p-6 border-4 border-gray-200 rounded-3xl font-bold text-xl hover:bg-gray-50 hover:border-gray-300 hover:shadow-xl transition-all"
+          >
+            🔄 Очистить выбор
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"
+      onclick="closeSheet()"
+    ></div>
+
+    <script>
+      let currentDate = new Date(2026, 2, 1)
+      let selectedDays = new Set()
+      let sampleData = {
+        2: 'Объект А',
+        4: 'Объект Б',
+        7: 'Объект А',
+        9: 'Объект Б',
+        12: 'Объект А',
+        16: 'Объект Б',
+        19: 'Объект А',
+        23: 'Объект Б',
+        26: 'Объект А',
+        29: 'Объект Б',
+      }
+
+      function renderCalendar() {
+        document.getElementById('month-title').textContent = currentDate.toLocaleDateString(
+          'ru-RU',
+          { month: 'long', year: 'numeric' }
+        )
+        renderDesktopGrid()
+        renderMobileList()
+        updateCount()
+      }
+
+      function renderDesktopGrid() {
+        const year = currentDate.getFullYear(),
+          month = currentDate.getMonth()
+        const firstDay = new Date(year, month, 1).getDay() || 7
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        const grid = document.getElementById('desktop-grid')
+
+        // Очищаем только ячейки дней
+        while (grid.children.length > 1) grid.removeChild(grid.lastChild)
+
+        // Пустые ячейки
+        for (let i = 1; i < firstDay; i++) {
+          const cell = document.createElement('div')
+          cell.className = 'desktop-cell bg-gray-50 opacity-50'
+          grid.appendChild(cell)
+        }
+
+        // Дни
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cell = document.createElement('div')
+          cell.className = `desktop-cell ${selectedDays.has(day) ? 'selected' : ''}`
+          cell.dataset.day = day
+          cell.onclick = () => toggleDay(day, cell)
+
+          const status = sampleData[day]
+          cell.innerHTML = `
+                    <div class="text-3xl font-black mb-2 text-gray-800">${day}</div>
+                    ${
+                      status
+                        ? `
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                            <div class="px-3 py-1 bg-gradient-to-r from-emerald-400 to-teal-500 text-white text-sm font-bold rounded-full">${status}</div>
+                        </div>
+                        <div class="text-xs text-gray-500 font-medium">В смене</div>
+                    `
+                        : `
+                        <div class="text-sm text-gray-400 font-medium mt-4">Свободен</div>
+                    `
+                    }
+                `
+          if (status) cell.classList.add('shift-present')
+          grid.appendChild(cell)
+        }
+      }
+
+      function renderMobileList() {
+        const year = currentDate.getFullYear(),
+          month = currentDate.getMonth()
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        const list = document.getElementById('mobile-list')
+        list.innerHTML = ''
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const item = document.createElement('div')
+          item.className = `mobile-list-item p-5 rounded-3xl shadow-lg bg-white hover:shadow-2xl ${selectedDays.has(day) ? 'selected' : ''}`
+          item.dataset.day = day
+          item.onclick = () => toggleDay(day, item)
+
+          const date = new Date(year, month, day)
+          const weekday = date.toLocaleDateString('ru-RU', { weekday: 'long' })
+          const status = sampleData[day]
+
+          item.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <div class="text-2xl font-black text-gray-900">${day}</div>
+                            <div class="text-sm text-gray-500">${weekday}</div>
+                        </div>
+                        ${status ? '<div class="w-4 h-4 bg-green-400 rounded-full shadow-lg"></div>' : ''}
+                    </div>
+                    ${
+                      status
+                        ? `
+                        <div class="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <div class="font-bold text-lg text-emerald-800">${status}</div>
+                        </div>
+                    `
+                        : '<div class="text-base text-gray-400 font-medium py-3">📅 Свободен</div>'
+                    }
+                `
+          if (status) item.classList.add('shift-present')
+          list.appendChild(item)
+        }
+      }
+
+      function toggleDay(day, el) {
+        if (selectedDays.has(day)) {
+          selectedDays.delete(day)
+          el.classList.remove('selected')
+        } else {
+          selectedDays.add(day)
+          el.classList.add('selected')
+        }
+        updateCount()
+      }
+
+      function selectDays(type) {
+        selectedDays.clear()
+        document.querySelectorAll('[data-day]').forEach((el) => el.classList.remove('selected'))
+        if (document.getElementById(type === 'empty' ? 'select-empty' : 'select-all').checked) {
+          document.querySelectorAll('[data-day]').forEach((el) => {
+            const day = parseInt(el.dataset.day)
+            const hasShift = sampleData[day]
+            if ((type === 'empty' && !hasShift) || type === 'all') {
+              selectedDays.add(day)
+              el.classList.add('selected')
+            }
+          })
+        }
+        updateCount()
+      }
+
+      function updateCount() {
+        const count = selectedDays.size
+        document.getElementById('selected-count').textContent = count
+        document.getElementById('sheet-count').textContent = count
+      }
+
+      function applyAction(action) {
+        const start = document.getElementById('date-start').value
+        const end = document.getElementById('date-end').value
+
+        if (start && end) {
+          const sDate = new Date(start),
+            eDate = new Date(end)
+          for (let d = new Date(sDate); d <= eDate; d.setDate(d.getDate() + 1)) {
+            const day = d.getDate()
+            if (action === 'clear') delete sampleData[day]
+            else sampleData[day] = action === 'shift-A' ? 'Объект А' : 'Объект Б'
+          }
+        } else {
+          selectedDays.forEach((day) => {
+            if (action === 'clear') delete sampleData[day]
+            else sampleData[day] = action === 'shift-A' ? 'Объект А' : 'Объект Б'
+          })
+        }
+        renderCalendar()
+        closeSheet()
+      }
+
+      function clearSelection() {
+        selectedDays.clear()
+        document.querySelectorAll('[data-day]').forEach((el) => el.classList.remove('selected'))
+        document.getElementById('select-empty').checked = false
+        document.getElementById('select-all').checked = false
+        updateCount()
+      }
+
+      function prevMonth() {
+        currentDate.setMonth(currentDate.getMonth() - 1)
+        renderCalendar()
+      }
+      function nextMonth() {
+        currentDate.setMonth(currentDate.getMonth() + 1)
+        renderCalendar()
+      }
+
+      // Bottom Sheet (только на mobile)
+      const fab = document.getElementById('fab')
+      fab.onclick = () => {
+        document.getElementById('sheet-count').textContent = selectedDays.size
+        document.getElementById('bottom-sheet').classList.remove('translate-y-full')
+        document.getElementById('overlay').classList.remove('hidden')
+      }
+      function closeSheet() {
+        document.getElementById('bottom-sheet').classList.add('translate-y-full')
+        document.getElementById('overlay').classList.add('hidden')
+      }
+
+      renderCalendar()
+      window.addEventListener('resize', renderCalendar)
+    </script>
+  </body>
+</html>
