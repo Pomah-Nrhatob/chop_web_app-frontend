@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-let cachedTokens = null // {accessToken, refreshToken, expiresAt}
-let isRefreshing = false
+// ✅ Используем Promise для синхронизации refresh
+let refreshPromise = null
 let failedQueue = []
 
 const processQueue = (error, tokens = null) => {
@@ -28,12 +28,12 @@ class AuthError extends Error {
   }
 }
 
-// Получаем свежие токены из NextAuth
-const fetchTokensFromSession = async () => {
+const getTokensFromSession = async () => {
   try {
     const { getSession } = await import('next-auth/react')
     const session = await getSession()
     return {
+      id: session?.user?.id,
       accessToken: session?.user?.accessToken,
       refreshToken: session?.user?.refreshToken,
       expiresAt: session?.user?.expiresAt,
@@ -41,10 +41,6 @@ const fetchTokensFromSession = async () => {
   } catch {
     return null
   }
-}
-
-const updateCachedTokens = async () => {
-  cachedTokens = await fetchTokensFromSession()
 }
 
 const makeRefreshRequest = async (refreshToken) => {
@@ -55,15 +51,13 @@ const makeRefreshRequest = async (refreshToken) => {
 baseClient.interceptors.request.use(
   async (config) => {
     if (config.needAuth) {
-      if (!cachedTokens || !cachedTokens.accessToken) {
-        await updateCachedTokens()
-      }
+      const tokens = await getTokensFromSession()
 
-      if (!cachedTokens?.accessToken) {
+      if (!tokens?.accessToken) {
         throw new AuthError('No access token available')
       }
 
-      config.headers.Authorization = `Bearer ${cachedTokens.accessToken}`
+      config.headers.Authorization = `Bearer ${tokens.accessToken}`
     }
     return config
   },
@@ -83,7 +77,8 @@ baseClient.interceptors.response.use(
     ) {
       originalRequest._retryAttempted = true
 
-      if (isRefreshing) {
+      // ✅ Если уже идёт refresh, добавляем в очередь
+      if (refreshPromise) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
@@ -94,39 +89,61 @@ baseClient.interceptors.response.use(
           .catch((err) => Promise.reject(err))
       }
 
-      isRefreshing = true
+      // ✅ Инициируем refresh, если очередь была пуста
+      refreshPromise = (async () => {
+        try {
+          const tokens = await getTokensFromSession()
+
+          if (!tokens?.refreshToken) {
+            throw new Error('No refresh token available')
+          }
+
+          const refreshed = await makeRefreshRequest(tokens.refreshToken)
+
+          // ✅ Обновляем сессию через signIn
+          const { signIn } = await import('next-auth/react')
+
+          await signIn('credentials', {
+            userFromFrontend: JSON.stringify({
+              id: tokens.id || 'user-id',
+              access_token: refreshed.access_token,
+              refresh_token: refreshed.refresh_token,
+              expires_at: new Date(refreshed.expires_at).toISOString(),
+            }),
+            redirect: false,
+          })
+
+          // ✅ Ждем немного для обновления сессии
+          await new Promise((resolve) => setTimeout(resolve, 150))
+
+          const updatedTokens = await getTokensFromSession()
+
+          // ✅ Очищаем refreshPromise и разрешаем очередь
+          const queuePromise = refreshPromise
+          refreshPromise = null
+          processQueue(null, updatedTokens)
+
+          return updatedTokens
+        } catch (refreshError) {
+          // ✅ Очищаем refreshPromise и отклоняем очередь
+          const queuePromise = refreshPromise
+          refreshPromise = null
+          processQueue(refreshError, null)
+
+          const { signOut } = await import('next-auth/react')
+          await signOut({ redirect: false })
+
+          throw new AuthError('Session expired')
+        }
+      })()
 
       try {
-        // ✅ БЕЗ getSession() — используем refreshToken из кэша
-        if (!cachedTokens?.refreshToken) {
-          throw new Error('No refresh token in cache')
-        }
-
-        const refreshed = await makeRefreshRequest(cachedTokens.refreshToken)
-
-        // ✅ Обновляем кэш
-        cachedTokens = {
-          accessToken: refreshed.access_token,
-          refreshToken: refreshed.refresh_token,
-          expiresAt: new Date(refreshed.expires_at).getTime(),
-        }
-
-        // ✅ НЕ трогаем NextAuth update() — только кэш!
-        processQueue(null, cachedTokens)
-        isRefreshing = false
-
-        originalRequest.headers.Authorization = `Bearer ${cachedTokens.accessToken}`
+        // ✅ Ждем завершения refresh и получаем обновленные токены
+        const updatedTokens = await refreshPromise
+        originalRequest.headers.Authorization = `Bearer ${updatedTokens.accessToken}`
         return baseClient(originalRequest)
       } catch (refreshError) {
-        processQueue(refreshError, null)
-        isRefreshing = false
-        cachedTokens = null
-
-        // ✅ Логаут только при ошибке refresh
-        const { signOut } = await import('next-auth/react')
-        await signOut({ redirect: false })
-
-        return Promise.reject(new AuthError('Session expired'))
+        return Promise.reject(refreshError)
       }
     }
     return Promise.reject(error)
@@ -172,8 +189,7 @@ export const apiClient = {
 
 export const clearUserSession = () => {
   console.log('🧹 clearUserSession вызван')
-  cachedTokens = null
 }
 
 export const USER_QUERY_KEY = ['user']
-export { cachedTokens }
+export const getCurrentTokens = getTokensFromSession
