@@ -75,7 +75,7 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: false, // ✅ HTTP!
-        domain: '212.67.13.62', // ✅ Раскомментируйте для IP!
+        // domain: '212.67.13.62', // ✅ Раскомментируйте для IP!
       },
     },
   },
@@ -86,7 +86,7 @@ export const authOptions = {
       sameSite: 'lax',
       path: '/',
       secure: false,
-      domain: '212.67.13.62',
+      // domain: '212.67.13.62',
     },
   },
   pages: {
