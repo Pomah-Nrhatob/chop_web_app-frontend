@@ -1,4 +1,7 @@
 import { ONE_COMPANY_QUERY_KEY } from '@/features/company/api/use-company'
+import { DICTIONARY_OBJECTS_KEY } from '@/features/dictionary/api/use-get-dictionary-objects'
+import { DICTIONARY_SECURITIES_KEY } from '@/features/dictionary/api/use-get-dictionary-securities'
+import { useDictionaryCacheReset } from '@/features/dictionary/hooks/useDictionaryCacheReset'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { userApi } from '@/shared/api/user/user-api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -35,12 +38,19 @@ export const useUser = () => {
 export const useChangeActiveCompany = (additionalOnSuccess) => {
   const { refreshUser } = useUser()
   const queryClient = useQueryClient()
+  const { resetDictionaryCache } = useDictionaryCacheReset()
 
   const mutation = useMutation({
     mutationFn: (data) => userApi.changeActiveCompany(data),
 
     onSuccess: async () => {
       await refreshUser()
+
+      resetDictionaryCache([DICTIONARY_OBJECTS_KEY, DICTIONARY_SECURITIES_KEY])
+
+      queryClient.invalidateQueries({
+        queryKey: ['calendar-allObjects'],
+      })
 
       queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
       queryClient.invalidateQueries({ queryKey: ['objects'] })

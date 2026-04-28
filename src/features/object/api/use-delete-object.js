@@ -11,6 +11,9 @@ export const useDeleteObject = (onSuccessCallback) => {
     mutationFn: (id) => objectApi.deleteObject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['objects'] })
+      queryClient.invalidateQueries({
+        queryKey: ['calendar-allObjects'],
+      })
 
       toaster.create({
         title: 'Удалено',

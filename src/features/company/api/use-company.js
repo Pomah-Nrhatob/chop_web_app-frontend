@@ -1,3 +1,6 @@
+import { DICTIONARY_OBJECTS_KEY } from '@/features/dictionary/api/use-get-dictionary-objects'
+import { DICTIONARY_SECURITIES_KEY } from '@/features/dictionary/api/use-get-dictionary-securities'
+import { useDictionaryCacheReset } from '@/features/dictionary/hooks/useDictionaryCacheReset'
 import { USER_QUERY_KEY } from '@/features/users/api/use-user'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { companyApi } from '@/shared/api/company/company-api'
@@ -40,6 +43,7 @@ export const useOneCompany = () => {
 
 export const useCreateCompany = () => {
   const queryClient = useQueryClient()
+  const { resetDictionaryCache } = useDictionaryCacheReset()
 
   return useMutation({
     mutationFn: (data) => companyApi.createCompany(data),
@@ -58,6 +62,8 @@ export const useCreateCompany = () => {
             : oldUser.companyUsers,
         }
       })
+
+      resetDictionaryCache([DICTIONARY_OBJECTS_KEY, DICTIONARY_SECURITIES_KEY])
 
       queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
       queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })

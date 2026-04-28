@@ -1,9 +1,9 @@
 'use client'
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
-import { authApi } from '@/shared/api/auth/auth-api'
-import { cachedTokens, clearUserSession, USER_QUERY_KEY } from '@/shared/api/api'
+import { clearUserSession, USER_QUERY_KEY } from '@/shared/api/api'
 
 export const useLogout = () => {
   const router = useRouter()
@@ -12,23 +12,24 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: async () => {
       try {
-        // 1. Backend logout с refresh_token из кэша
-        if (cachedTokens?.refreshToken) {
-          await authApi.logout({ refresh_token: cachedTokens.refreshToken })
-        }
+        // 1. ✅ СЕРВЕРНЫЙ LOGOUT (берёт refresh_token из сессии)
+        await fetch('/api/logout', {
+          method: 'POST',
+          // Без тела — сервер берёт из JWT сессии
+        })
 
         // 2. NextAuth logout (очищает JWT куки)
         await signOut({ redirect: false })
 
-        // 3. Очищаем фронт состояние
+        // 3. Локальная очистка
         clearUserSession()
         queryClient.removeQueries({ queryKey: USER_QUERY_KEY })
         queryClient.clear()
 
         console.log('✅ Полный logout завершён')
       } catch (error) {
-        console.error('Backend logout error:', error)
-        // Продолжаем локальный logout даже при ошибке backend
+        console.error('Logout error:', error)
+        // Fallback
         await signOut({ redirect: false })
         clearUserSession()
         queryClient.clear()
