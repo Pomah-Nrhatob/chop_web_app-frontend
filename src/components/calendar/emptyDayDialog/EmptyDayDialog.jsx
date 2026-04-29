@@ -7,8 +7,12 @@ export default function EmptyDayDialog({ open, setOpen }) {
     <Dialog.Root lazyMount open={open} onOpenChange={(e) => setOpen(e.open)}>
       <Portal>
         <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
+        <Dialog.Positioner
+          display="flex"
+          alignItems={{ base: 'center', md: 'flex-start' }}
+          justifyContent="center"
+        >
+          <Dialog.Content w={{ base: 'calc(100vw - 24px)', md: '100%' }}>
             <Dialog.Header>
               <Dialog.Title>Пустой день</Dialog.Title>
             </Dialog.Header>

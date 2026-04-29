@@ -55,11 +55,8 @@ export default function CalendarAllObjects() {
         <Box>
           {/* ✅ КОНТЕЙНЕР СО СКРОЛЛОМ + STICKY ЗАГОЛОВКИ */}
           <Box
-            h={`calc(70vh - 150px)`} // 100vh минус header + пагинация
             minH="350px" // 100vh минус header + пагинация
-            maxH="700px"
-            overflowY="auto" // Вертикальный скролл
-            position="relative" // Для sticky
+            position="relative"
             border="1px solid"
             borderColor="gray.200"
             borderRadius="lg"
@@ -253,7 +250,9 @@ export default function CalendarAllObjects() {
               </VStack>
             )}
           </Box>
-          <CalendarPagination meta={allObjectsWorkdays?.meta} />
+          {allObjectsWorkdays?.meta.total > allObjectsWorkdays?.meta.limit ? (
+            <CalendarPagination meta={allObjectsWorkdays?.meta} />
+          ) : null}
         </Box>
       </VStack>
     </>
