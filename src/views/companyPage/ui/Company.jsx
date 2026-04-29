@@ -36,29 +36,15 @@ import {
 } from '@chakra-ui/react'
 
 // 🎨 React Icons
-import {
-  FiPlus,
-  FiTrash2,
-  FiEdit2,
-  FiChevronRight,
-  FiBuilding,
-  FiUsers,
-  FiAlertTriangle,
-} from 'react-icons/fi'
+import { FiPlus } from 'react-icons/fi'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createCompanySchema } from '@/features/company/model/create-company-schema'
-import {
-  useCompanies,
-  useCreateCompany,
-  useDeleteCompany,
-  useOneCompany,
-} from '@/features/company/api/use-company'
+import { useCompanies, useCreateCompany, useOneCompany } from '@/features/company/api/use-company'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { useUser } from '@/features/users/api/use-user'
 import CompanyDetails from '@/views/companyPage/ui/CompanyDetails'
 import UserCompaniesList from '@/views/companyPage/ui/UserCompaniesList'
-import SelectSecurity from '@/features/dictionary/components/selectWithSearch/SelectSecurity'
 
 export default function Company() {
   const [isOpen, setIsOpen] = useState(false)
@@ -114,7 +100,6 @@ export default function Company() {
 
   return (
     <Container maxW="container.lg" pt={10} pb={20} display="flex" gap={6} flexDirection="column">
-      <SelectSecurity />
       <VStack spacing={6} align="stretch">
         {/* Заголовок страницы */}
         <HStack justify="space-between" align="center">

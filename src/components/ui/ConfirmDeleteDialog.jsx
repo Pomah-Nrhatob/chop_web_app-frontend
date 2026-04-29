@@ -15,8 +15,12 @@ export const ConfirmDeleteDialog = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Backdrop />
-      <Dialog.Positioner>
-        <Dialog.Content width="full" py={2} px={2}>
+      <Dialog.Positioner
+        display="flex"
+        alignItems={{ base: 'center', md: 'flex-start' }}
+        justifyContent="center"
+      >
+        <Dialog.Content w={{ base: 'calc(100vw - 24px)', md: '100%' }} py={2} px={2}>
           <Box>
             <Dialog.Header display="flex" alignItems="center">
               <Box
