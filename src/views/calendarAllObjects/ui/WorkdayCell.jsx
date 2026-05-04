@@ -3,7 +3,10 @@
 import { Box, Flex, Text, Badge, HStack, Icon } from '@chakra-ui/react'
 import { MdPeopleOutline, MdCheckCircle, MdPlayCircleFilled } from 'react-icons/md'
 
-export default function WorkdayCell({ workday, openEmptyDay = () => {}, openOneDay = () => {} }) {
+export default function WorkdayCell(
+  { workday, openEmptyDay = () => {}, openOneDay = () => {} },
+  selectedWorkday
+) {
   if (!workday) {
     return (
       <Box

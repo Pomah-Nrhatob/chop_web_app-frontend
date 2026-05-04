@@ -1,7 +1,94 @@
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
+import { CloseButton, Combobox, createListCollection, Portal, Text } from '@chakra-ui/react'
+import { useMemo, useState } from 'react'
 
-export default function SelectObject() {
-  const { data: objects, isLoading } = useGetDictionaryObjects()
+export default function SelectObject({ value, onChange, error, isDisabled }) {
+  const [searchValue, setSearchValue] = useState('')
+  const { data: objects = [], isLoading } = useGetDictionaryObjects()
 
-  return <div>SelectObject</div>
+  const filteredItems = useMemo(
+    () => objects.filter((item) => item.title.toLowerCase().includes(searchValue.toLowerCase())),
+    [objects, searchValue]
+  )
+
+  const collection = useMemo(
+    () =>
+      createListCollection({
+        items: filteredItems,
+        itemToString: (item) => item.title,
+        itemToValue: (item) => String(item.id),
+      }),
+    [filteredItems]
+  )
+
+  const handleClear = () => {
+    onChange(null)
+    setSearchValue('')
+  }
+
+  return (
+    <>
+      <Combobox.Root
+        autoFocus={false}
+        // width="320px"
+        value={value ? [String(value)] : []}
+        collection={collection}
+        onValueChange={(details) => {
+          const next = details.value?.[0] ? Number(details.value[0]) : null
+          onChange(next)
+        }}
+        onInputValueChange={(details) => setSearchValue(details.inputValue)}
+        openOnClick
+        invalid={!!error}
+        disabled={isDisabled}
+      >
+        <Combobox.Label>Выбор объекта</Combobox.Label>
+        <Combobox.Control>
+          <Combobox.Input placeholder="Выберите объект" />
+          <Combobox.IndicatorGroup>
+            {value && !isDisabled && (
+              <CloseButton
+                size="sm"
+                onClick={handleClear}
+                position="absolute"
+                right="10px"
+                top="50%"
+                transform="translateY(-50%)"
+                zIndex={1}
+              />
+            )}
+            <Combobox.Trigger />
+          </Combobox.IndicatorGroup>
+        </Combobox.Control>
+
+        <Portal>
+          <Combobox.Positioner>
+            <Combobox.Content>
+              <Combobox.ItemGroup>
+                <Combobox.ItemGroupLabel>Объекты</Combobox.ItemGroupLabel>
+                {isLoading ? (
+                  <Text>Загрузка...</Text>
+                ) : filteredItems.length ? (
+                  filteredItems.map((item) => (
+                    <Combobox.Item key={item.id} item={item}>
+                      {item.title}
+                      <Combobox.ItemIndicator />
+                    </Combobox.Item>
+                  ))
+                ) : (
+                  <Combobox.Empty>Объекты не найдены</Combobox.Empty>
+                )}
+              </Combobox.ItemGroup>
+            </Combobox.Content>
+          </Combobox.Positioner>
+        </Portal>
+      </Combobox.Root>
+
+      {error && (
+        <Text color="red.500" fontSize="sm" mt={1}>
+          {error.message}
+        </Text>
+      )}
+    </>
+  )
 }

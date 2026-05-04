@@ -1,30 +1,237 @@
-'use client'
+import { useScheduleForm } from '@/components/calendar/emptyDayDialog/hooks/useScheduleForm'
+import SelectObject from '@/features/dictionary/components/selectWithSearch/SelectObject'
+import SelectSecurity from '@/features/dictionary/components/selectWithSearch/SelectSecurity'
+import {
+  Button,
+  CloseButton,
+  createListCollection,
+  Dialog,
+  Flex,
+  Portal,
+  Select,
+  Text,
+  Badge,
+  Heading,
+  Box,
+} from '@chakra-ui/react'
+import { Controller } from 'react-hook-form'
+import { useEffect } from 'react'
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
+import { WORKDAY_OPTIONS } from '@/components/calendar/data/workday-options'
 
-import { Button, CloseButton, Dialog, Portal } from '@chakra-ui/react'
+export default function EmptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDayInfo }) {
+  const { day, month, year, objectId, securities } = emptyDayInfo
 
-export default function EmptyDayDialog({ open, setOpen }) {
+  const { isCreating, handleSubmit, errors, onSubmit, control, resetForm, setValue } =
+    useScheduleForm(null, () => setOpen(false))
+
+  useEffect(() => {
+    if (open && day && month && year) {
+      const utcDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+      setValue('timestamps', [utcDate.toISOString()])
+    }
+    if (open && objectId !== undefined) {
+      setValue('securityObjectId', objectId)
+    }
+    if (open && securities) {
+      setValue('securities', securities)
+    }
+  }, [open, day, month, year, objectId, securities, setValue])
+
+  // Создаем коллекцию из значений
+  const collection = createListCollection({
+    items: Object.values(WORKDAY_OPTIONS),
+    itemToString: (item) => item.label,
+    itemToValue: (item) => item.value,
+  })
+
+  // Форматируем дату для отображения
+  const formattedDate =
+    day && month && year
+      ? format(new Date(year, month - 1, day), 'd MMMM yyyy г.', { locale: ru })
+      : 'Неизвестная дата'
+
   return (
-    <Dialog.Root lazyMount open={open} onOpenChange={(e) => setOpen(e.open)}>
+    <Dialog.Root
+      initialFocusEl={null}
+      onExitComplete={() => {
+        setEmptyDayInfo({})
+        resetForm()
+      }}
+      lazyMount
+      open={open}
+      onOpenChange={(e) => setOpen(e.open)}
+    >
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner
-          display="flex"
           alignItems={{ base: 'center', md: 'flex-start' }}
           justifyContent="center"
         >
-          <Dialog.Content w={{ base: 'calc(100vw - 24px)', md: '100%' }}>
-            <Dialog.Header>
-              <Dialog.Title>Пустой день</Dialog.Title>
+          <Dialog.Content
+            as="form"
+            onSubmit={handleSubmit(onSubmit)}
+            w={{ base: 'calc(100vw - 32px)', md: '500px' }}
+            maxW="500px"
+          >
+            <Dialog.Header pb={0}>
+              <Flex direction="column" gap={2}>
+                <Heading size="md">Создание расписания</Heading>
+                <Badge colorScheme="blue" alignSelf="flex-start">
+                  Настройка дня
+                </Badge>
+              </Flex>
             </Dialog.Header>
-            <Dialog.Body></Dialog.Body>
-            <Dialog.Footer>
+
+            <Box px={6} py={2}>
+              <Flex
+                align="center"
+                justify="space-between"
+                mb={4}
+                p={3}
+                bg="gray.50"
+                borderRadius="md"
+              >
+                <Text fontSize="sm" color="gray.700">
+                  <strong>Дата:</strong> {formattedDate}
+                </Text>
+                <Badge colorScheme="green" variant="solid">
+                  Пустой день
+                </Badge>
+              </Flex>
+
+              <Text fontSize="sm" color="gray.600" mb={4}>
+                Укажите параметры расписания для выбранного дня. Все поля обязательны для
+                заполнения.
+              </Text>
+
+              <Box divideX={4} />
+            </Box>
+
+            <Dialog.Body px={6} pb={6}>
+              <Flex flexDirection="column" gap={5}>
+                <Controller
+                  control={control}
+                  name="securityObjectId"
+                  rules={{ required: 'Объект безопасности обязателен' }}
+                  render={({ field, fieldState }) => (
+                    <SelectObject
+                      label={
+                        <Text fontWeight="medium" mb={2}>
+                          Объект безопасности
+                          {!field.value && (
+                            <Text as="span" color="red.500" ml={1}>
+                              *
+                            </Text>
+                          )}
+                        </Text>
+                      }
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={fieldState.error}
+                      isDisabled={!!objectId}
+                      placeholder="Выберите объект безопасности"
+                    />
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="securities"
+                  rules={{ required: 'Охранники обязательны' }}
+                  render={({ field, fieldState }) => (
+                    <SelectSecurity
+                      label={
+                        <Text fontWeight="medium" mb={2}>
+                          Охранники
+                          {!field.value?.length && (
+                            <Text as="span" color="red.500" ml={1}>
+                              *
+                            </Text>
+                          )}
+                        </Text>
+                      }
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={fieldState.error}
+                      placeholder="Выберите охранников"
+                    />
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="workdayStatus"
+                  rules={{ required: 'Тип дня обязателен' }}
+                  render={({ field, fieldState }) => {
+                    const selectedItem =
+                      collection.items.find((item) => item.value === field.value) || null
+
+                    return (
+                      <div>
+                        <Text fontWeight="medium" mb={2}>
+                          Тип дня
+                          {!field.value && (
+                            <Text as="span" color="red.500" ml={1}>
+                              *
+                            </Text>
+                          )}
+                        </Text>
+
+                        <Select.Root
+                          collection={collection}
+                          value={field.value ? [field.value] : []}
+                          onValueChange={(details) => {
+                            field.onChange(details.value[0])
+                          }}
+                        >
+                          <Select.Control>
+                            <Select.Trigger>
+                              <Select.ValueText placeholder="Выберите тип дня" />
+                            </Select.Trigger>
+                            <Select.IndicatorGroup>
+                              <Select.Indicator />
+                            </Select.IndicatorGroup>
+                          </Select.Control>
+
+                          <Select.Positioner>
+                            <Select.Content>
+                              {collection.items.map((item) => (
+                                <Select.Item key={item.value} item={item}>
+                                  <Select.ItemText>{item.label}</Select.ItemText>
+                                  <Select.ItemIndicator />
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select.Positioner>
+                        </Select.Root>
+                        {fieldState.error && (
+                          <Text color="red.500" fontSize="sm" mt={1}>
+                            {fieldState.error.message}
+                          </Text>
+                        )}
+                      </div>
+                    )
+                  }}
+                />
+              </Flex>
+            </Dialog.Body>
+
+            <Dialog.Footer px={6} pb={6} pt={0}>
               <Dialog.ActionTrigger asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button disabled={isCreating} variant="outline" type="button">
+                  Отменить
+                </Button>
               </Dialog.ActionTrigger>
-              <Button>Save</Button>
+
+              <Button loading={isCreating} disabled={isCreating} type="submit">
+                Создать расписание
+              </Button>
             </Dialog.Footer>
+
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
+              <CloseButton size="sm" position="absolute" top={3} right={3} />
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>
