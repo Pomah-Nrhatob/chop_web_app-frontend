@@ -28,15 +28,27 @@ export default function CalendarAllObjects() {
 
   const [openOneDayDialog, setOpenOneDayDialog] = useState(false)
   const [openEmptyDayDialog, setOpenEmptyDayDialog] = useState(false)
+  const [emptyDayInfo, setEmptyDayInfo] = useState({})
+  const [selectedWorkday, setSelectedWorkday] = useState(null)
 
   const objects = allObjectsWorkdays?.data || []
   const daysInMonth = getDaysInMonth()
 
   return (
     <>
-      <OneDayDialog open={openOneDayDialog} setOpen={setOpenOneDayDialog} />
+      <OneDayDialog
+        open={openOneDayDialog}
+        setOpen={setOpenOneDayDialog}
+        selectedWorkday={selectedWorkday}
+        setSelectedWorkday={setSelectedWorkday}
+      />
 
-      <EmptyDayDialog open={openEmptyDayDialog} setOpen={setOpenEmptyDayDialog} />
+      <EmptyDayDialog
+        emptyDayInfo={emptyDayInfo}
+        setEmptyDayInfo={setEmptyDayInfo}
+        open={openEmptyDayDialog}
+        setOpen={setOpenEmptyDayDialog}
+      />
 
       <VStack
         align="stretch"
@@ -236,10 +248,23 @@ export default function CalendarAllObjects() {
                       }
 
                       const dayData = obj.days?.find((d) => d.day === dayNum)
+
                       return (
                         <WorkdayCell
-                          openOneDay={() => setOpenOneDayDialog(true)}
-                          openEmptyDay={() => setOpenEmptyDayDialog(true)}
+                          selectedWorkday={selectedWorkday}
+                          openOneDay={() => {
+                            setOpenOneDayDialog(true)
+                            setSelectedWorkday(dayData.workday.id)
+                          }}
+                          openEmptyDay={() => {
+                            setOpenEmptyDayDialog(true)
+                            setEmptyDayInfo({
+                              year: queryParams.year,
+                              month: queryParams.month,
+                              day: dayData.day,
+                              objectId: obj.id,
+                            })
+                          }}
                           key={`${obj.id}-${dayNum}`}
                           workday={dayData?.workday}
                         />
