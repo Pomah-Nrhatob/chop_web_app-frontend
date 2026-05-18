@@ -4,11 +4,9 @@ import SelectSecurity from '@/features/dictionary/components/selectWithSearch/Se
 import {
   Button,
   CloseButton,
-  createListCollection,
   Dialog,
   Flex,
   Portal,
-  Select,
   Text,
   Badge,
   Heading,
@@ -18,7 +16,7 @@ import { Controller } from 'react-hook-form'
 import { useEffect } from 'react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { WORKDAY_OPTIONS } from '@/components/calendar/data/workday-options'
+import SelectTypeDay from '@/components/calendar/components/SelectTypeDay'
 
 export default function EmptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDayInfo }) {
   const { day, month, year, objectId, securities } = emptyDayInfo
@@ -38,13 +36,6 @@ export default function EmptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDa
       setValue('securities', securities)
     }
   }, [open, day, month, year, objectId, securities, setValue])
-
-  // Создаем коллекцию из значений
-  const collection = createListCollection({
-    items: Object.values(WORKDAY_OPTIONS),
-    itemToString: (item) => item.label,
-    itemToValue: (item) => item.value,
-  })
 
   // Форматируем дату для отображения
   const formattedDate =
@@ -160,61 +151,7 @@ export default function EmptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDa
                   )}
                 />
 
-                <Controller
-                  control={control}
-                  name="workdayStatus"
-                  rules={{ required: 'Тип дня обязателен' }}
-                  render={({ field, fieldState }) => {
-                    const selectedItem =
-                      collection.items.find((item) => item.value === field.value) || null
-
-                    return (
-                      <div>
-                        <Text fontWeight="medium" mb={2}>
-                          Тип дня
-                          {!field.value && (
-                            <Text as="span" color="red.500" ml={1}>
-                              *
-                            </Text>
-                          )}
-                        </Text>
-
-                        <Select.Root
-                          collection={collection}
-                          value={field.value ? [field.value] : []}
-                          onValueChange={(details) => {
-                            field.onChange(details.value[0])
-                          }}
-                        >
-                          <Select.Control>
-                            <Select.Trigger>
-                              <Select.ValueText placeholder="Выберите тип дня" />
-                            </Select.Trigger>
-                            <Select.IndicatorGroup>
-                              <Select.Indicator />
-                            </Select.IndicatorGroup>
-                          </Select.Control>
-
-                          <Select.Positioner>
-                            <Select.Content>
-                              {collection.items.map((item) => (
-                                <Select.Item key={item.value} item={item}>
-                                  <Select.ItemText>{item.label}</Select.ItemText>
-                                  <Select.ItemIndicator />
-                                </Select.Item>
-                              ))}
-                            </Select.Content>
-                          </Select.Positioner>
-                        </Select.Root>
-                        {fieldState.error && (
-                          <Text color="red.500" fontSize="sm" mt={1}>
-                            {fieldState.error.message}
-                          </Text>
-                        )}
-                      </div>
-                    )
-                  }}
-                />
+                <SelectTypeDay control={control} />
               </Flex>
             </Dialog.Body>
 

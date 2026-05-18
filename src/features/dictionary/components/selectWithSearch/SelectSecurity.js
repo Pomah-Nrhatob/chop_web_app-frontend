@@ -1,17 +1,16 @@
 import { useGetDictionarySecurities } from '@/features/dictionary/api/use-get-dictionary-securities'
-import {
-  Combobox,
-  createListCollection,
-  Portal,
-  Text,
-  Tag,
-  Button,
-  Flex,
-  Box,
-} from '@chakra-ui/react'
+import { Combobox, createListCollection, Portal, Text, Tag, Flex, Box } from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
 
-export default function SelectSecurity({ value = [], onChange, error }) {
+export default function SelectSecurity({
+  value = [],
+  onChange,
+  error,
+  multiple = true,
+  placeholder = 'Выберите охранников',
+  title = 'Выбор охранников',
+  inputOnTop = false,
+}) {
   const [searchValue, setSearchValue] = useState('')
   const { data: securities = [], isLoading } = useGetDictionarySecurities()
 
@@ -23,14 +22,16 @@ export default function SelectSecurity({ value = [], onChange, error }) {
 
   const filteredItems = useMemo(
     () =>
-      securities.filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item.surname.toLowerCase().includes(searchValue.toLowerCase()) ||
-          // Показываем только тех, кто ещё не выбран
-          !value.includes(item.id)
-      ),
-    [securities, searchValue, value]
+      securities
+        .filter(
+          (item) =>
+            item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+            item.surname.toLowerCase().includes(searchValue.toLowerCase())
+        )
+        // Для multiple: исключаем уже выбранные из списка
+        // Для single: показываем все (можно сменить выбор на другого)
+        .filter((item) => !multiple || !value.includes(item.id)),
+    [securities, searchValue, value, multiple]
   )
 
   const collection = useMemo(
@@ -48,77 +49,88 @@ export default function SelectSecurity({ value = [], onChange, error }) {
   }
 
   const handleValueChange = (details) => {
-    // details.value — массив ID
+    // details.value — массив ID (даже для single-select!)
     onChange(details.value)
   }
 
   return (
     <Box>
-      <Text fontSize="sm" fontWeight="medium" mb={2}>
-        Выбор охранников
-      </Text>
-
-      {/* Отображение выбранных охранников сверху */}
-      {selectedSecurities.length > 0 && (
-        <Flex mb={2} gap={3}>
-          {selectedSecurities.map((security) => (
-            <Tag.Root px={3} py={1} key={security.id} size="lg">
-              <Tag.Label>
-                {security.name} {security.surname}
-              </Tag.Label>
-              <Tag.EndElement>
-                <Tag.CloseTrigger onClick={() => handleRemove(security.id)} />
-              </Tag.EndElement>
-            </Tag.Root>
-          ))}
-        </Flex>
-      )}
-
-      <Combobox.Root
-        autoFocus={false}
-        multiple
-        // width="320px"
-        value={value}
-        collection={collection}
-        onValueChange={handleValueChange}
-        onInputValueChange={(details) => setSearchValue(details.inputValue)}
-        openOnClick
-        invalid={!!error}
-      >
-        {/* <Combobox.Label>Выбор охранников</Combobox.Label> */}
-        <Combobox.Control>
-          <Combobox.Input placeholder="Выберите охранников" />
-          <Combobox.IndicatorGroup>
-            <Combobox.Trigger />
-          </Combobox.IndicatorGroup>
-        </Combobox.Control>
-        <Portal>
-          <Combobox.Positioner>
-            <Combobox.Content>
-              <Combobox.ItemGroup>
-                <Combobox.ItemGroupLabel>Охранники</Combobox.ItemGroupLabel>
-                {isLoading ? (
-                  <Text>Загрузка...</Text>
-                ) : filteredItems.length ? (
-                  filteredItems.map((item) => (
-                    <Combobox.Item key={item.id} item={item}>
-                      {item.name} {item.surname}
-                      <Combobox.ItemIndicator />
-                    </Combobox.Item>
-                  ))
-                ) : (
-                  <Combobox.Empty>Охранники не найдены</Combobox.Empty>
-                )}
-              </Combobox.ItemGroup>
-            </Combobox.Content>
-          </Combobox.Positioner>
-        </Portal>
-      </Combobox.Root>
-      {error && (
-        <Text color="red.500" fontSize="sm" mt={1}>
-          {error.message}
+      {title && (
+        <Text fontSize="sm" fontWeight="medium" mb={2}>
+          {title}
         </Text>
       )}
+
+      <Flex gap={2} flexDirection={inputOnTop ? 'column-reverse' : 'column'}>
+        {/* 👇 Отображение выбранных охранников сверху — ТОЛЬКО для multiple */}
+        {selectedSecurities.length > 0 && (
+          <Flex gap={2} wrap="wrap">
+            {selectedSecurities.map((security) => (
+              <Tag.Root key={security.id} size="md">
+                <Tag.Label>
+                  {security.name} {security.surname}
+                </Tag.Label>
+                {multiple && (
+                  <Tag.EndElement>
+                    <Tag.CloseTrigger onClick={() => handleRemove(security.id)} />
+                  </Tag.EndElement>
+                )}
+              </Tag.Root>
+            ))}
+          </Flex>
+        )}
+
+        <Combobox.Root
+          autoFocus={false}
+          multiple={multiple}
+          value={value}
+          collection={collection}
+          onValueChange={handleValueChange}
+          onInputValueChange={(details) => setSearchValue(details.inputValue)}
+          openOnClick
+          invalid={!!error}
+        >
+          <Combobox.Control>
+            <Combobox.Input
+              placeholder={placeholder}
+              // 👇 Для single-select: readOnly, чтобы нельзя было вводить текст вручную
+              // (выбор только из выпадающего списка, как в классическом <select>)
+              readOnly={!multiple}
+            />
+            <Combobox.IndicatorGroup>
+              <Combobox.Trigger />
+            </Combobox.IndicatorGroup>
+          </Combobox.Control>
+          <Portal>
+            <Combobox.Positioner>
+              <Combobox.Content>
+                <Combobox.ItemGroup>
+                  <Combobox.ItemGroupLabel>Охранники</Combobox.ItemGroupLabel>
+                  {isLoading ? (
+                    <Text px={4} py={2}>
+                      Загрузка...
+                    </Text>
+                  ) : filteredItems.length ? (
+                    filteredItems.map((item) => (
+                      <Combobox.Item key={item.id} item={item}>
+                        {item.name} {item.surname}
+                        <Combobox.ItemIndicator />
+                      </Combobox.Item>
+                    ))
+                  ) : (
+                    <Combobox.Empty>Охранники не найдены</Combobox.Empty>
+                  )}
+                </Combobox.ItemGroup>
+              </Combobox.Content>
+            </Combobox.Positioner>
+          </Portal>
+        </Combobox.Root>
+        {error && (
+          <Text color="red.500" fontSize="sm" mt={1}>
+            {error.message}
+          </Text>
+        )}
+      </Flex>
     </Box>
   )
 }

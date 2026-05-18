@@ -1,9 +1,10 @@
-'use client'
-
-import { WORKDAY_OPTIONS_MAP } from '@/components/calendar/data/workday-options'
+import { useEditDayForm } from '@/components/calendar/emptyDayDialog/hooks/useEditDayForm'
 import { useGetOneObjectWorkday } from '@/features/calendar/api/use-getOneObjectWorkday'
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
 import { useGetDictionarySecurities } from '@/features/dictionary/api/use-get-dictionary-securities'
+import SecurityDayInfo from '@/components/calendar/oneDayDialog/SecurityDayInfo'
+import { WORKDAY_OPTIONS } from '@/components/calendar/data/workday-options'
+import { useWatch } from 'react-hook-form'
 import {
   Button,
   CloseButton,
@@ -14,20 +15,98 @@ import {
   HStack,
   Badge,
   Card,
-  Box,
   Grid,
   GridItem,
+  IconButton,
+  Alert,
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { useState, useMemo } from 'react'
+import { IoIosAdd } from 'react-icons/io'
 
 export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelectedWorkday }) {
-  const { isLoading, isFetching, refetch, oneObjectWorkdayInfo } = useGetOneObjectWorkday(
-    selectedWorkday,
-    {
-      enabled: !!selectedWorkday && open,
+  const [isEditing, setIsEditing] = useState(false)
+
+  const { isLoading, oneObjectWorkdayInfo, isFetching } = useGetOneObjectWorkday(selectedWorkday, {
+    enabled: !!selectedWorkday && open,
+  })
+
+  const {
+    addNewWorkday,
+    markForDeletion,
+    updateWorkday,
+    handleSubmit,
+    resetForm,
+    removeNewWorkday,
+    control,
+    errors,
+    isProcessing,
+  } = useEditDayForm(
+    {},
+    () => {
+      setIsEditing(false)
+    },
+    () => {
+      setIsEditing(false)
     }
   )
+
+  // Функция для извлечения сообщений об ошибках
+  const getErrorMessages = () => {
+    const messages = []
+
+    if (errors.newWorkdays && Array.isArray(errors.newWorkdays)) {
+      errors.newWorkdays.forEach((workdayErrors, index) => {
+        if (workdayErrors) {
+          Object.entries(workdayErrors).forEach(([field, fieldError]) => {
+            if (fieldError?.message) {
+              messages.push(`Новый сотрудник ${index + 1}: ${fieldError.message}`)
+            }
+          })
+        }
+      })
+    }
+
+    if (errors.updatedWorkdays && Array.isArray(errors.updatedWorkdays)) {
+      errors.updatedWorkdays.forEach((workdayErrors, index) => {
+        if (workdayErrors) {
+          Object.entries(workdayErrors).forEach(([field, fieldError]) => {
+            if (fieldError?.message) {
+              messages.push(`Обновленный сотрудник ${index + 1}: ${fieldError.message}`)
+            }
+          })
+        }
+      })
+    }
+
+    if (errors.deletedWorkdays && errors.deletedWorkdays.message) {
+      messages.push(errors.deletedWorkdays.message)
+    }
+
+    return messages
+  }
+
+  const errorMessages = getErrorMessages()
+
+  // Используем useWatch для получения данных формы
+  const deletedWorkdays = useWatch({ name: 'deletedWorkdays', control }) || []
+  const newWorkdays = useWatch({ name: 'newWorkdays', control }) || []
+  const updatedWorkdays = useWatch({ name: 'updatedWorkdays', control }) || []
+
+  // Используем useMemo для вычисления производных данных
+  const deletedSet = useMemo(() => new Set(deletedWorkdays), [deletedWorkdays])
+  const updatedMap = useMemo(() => {
+    const map = new Map()
+    updatedWorkdays.forEach((item) => {
+      map.set(item.id, item)
+    })
+    return map
+  }, [updatedWorkdays])
+
+  const handleAddWorkday = (data) => {
+    addNewWorkday(data)
+  }
 
   const formatDate = (timestamp) => {
     try {
@@ -38,14 +117,12 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
   }
 
   const { data: objects = [], isLoading: loadingObjects } = useGetDictionaryObjects()
-  const { data: securities = [], isLoading: loadingSecurities } = useGetDictionarySecurities()
+  const { isLoading: loadingSecurities } = useGetDictionarySecurities()
 
-  // Находим объект по ID
   const foundObject = objects.find((obj) => obj.id === oneObjectWorkdayInfo?.securityObjectId)
-  // Находим охранника по ID
-  const getSecurityName = (securityId) => {
-    const security = securities.find((sec) => sec.id === securityId)
-    return security ? `${security.name} ${security.surname}` : `Охранник #${securityId}`
+
+  const onSubmit = () => {
+    console.log('submit')
   }
 
   return (
@@ -56,28 +133,44 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
       initialFocusEl={null}
       onExitComplete={() => {
         setSelectedWorkday(null)
+        resetForm()
+        setIsEditing(false)
       }}
+      scrollBehavior="inside"
     >
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner
           display="flex"
-          alignItems={{ base: 'center', md: 'flex-start' }}
+          alignItems={{ base: 'flex-start', md: 'center' }}
           justifyContent="center"
+          pt={{ base: 2, md: 0 }}
+          px={{ base: 2, md: 0 }}
         >
-          <Dialog.Content w={{ base: 'calc(100vw - 24px)', md: '600px' }} maxW="600px">
-            <Dialog.Header>
+          <Dialog.Content
+            as="form"
+            onSubmit={handleSubmit(onSubmit)}
+            w={{ base: 'calc(100vw - 16px)', md: '600px' }}
+            maxW="600px"
+            maxH={{ base: 'calc(100dvh - 72px)', md: '90dvh' }}
+            overflow="hidden"
+            display="flex"
+            flexDirection="column"
+          >
+            <Dialog.Header flex="0 0 auto">
               <Dialog.Title>Информация о рабочем дне</Dialog.Title>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" position="absolute" top={3} right={3} />
+              </Dialog.CloseTrigger>
             </Dialog.Header>
 
-            <Dialog.Body>
-              {isLoading || loadingObjects || loadingSecurities ? (
+            <Dialog.Body flex="1 1 auto" overflowY="auto" overscrollBehavior="contain">
+              {isLoading || isFetching || loadingObjects || loadingSecurities ? (
                 <VStack justify="center" py={8}>
                   <Text>Загрузка данных...</Text>
                 </VStack>
               ) : oneObjectWorkdayInfo ? (
                 <VStack align="stretch" spacing={4}>
-                  {/* Основная информация о дне */}
                   <Card.Root variant="outline">
                     <Card.Header pb={2}>
                       <HStack justify="space-between">
@@ -87,7 +180,7 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
                       </HStack>
                     </Card.Header>
                     <Card.Body pt={2}>
-                      <Grid templateColumns="repeat(2, 1fr)" gap={4} mb={4}>
+                      <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4} mb={4}>
                         <GridItem>
                           <Text fontSize="sm" color="gray.600">
                             Объект:
@@ -102,9 +195,8 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
                     </Card.Body>
                   </Card.Root>
 
-                  {/* Информация о сотрудниках */}
                   <VStack align="stretch" spacing={3}>
-                    <HStack justify="space-between">
+                    <HStack justify="space-between" align="start" flexWrap="wrap" gap={2}>
                       <Text fontSize="lg" fontWeight="bold" color="gray.700">
                         Сотрудники ({oneObjectWorkdayInfo.securityWorkdays?.length || 0})
                       </Text>
@@ -122,86 +214,48 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
                       </Badge>
                     </HStack>
 
-                    {oneObjectWorkdayInfo.securityWorkdays?.map((worker, index) => (
-                      <Card.Root
-                        key={worker.id}
-                        variant="outline"
-                        bg={
-                          worker.isStarted ? 'green.50' : worker.isFinished ? 'blue.50' : 'gray.50'
-                        }
-                      >
-                        <Card.Body p={4}>
-                          <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                            <GridItem>
-                              <Text fontSize="sm" color="gray.600">
-                                Охранник:
-                              </Text>
-                              <Text fontWeight="medium">{getSecurityName(worker.securityId)}</Text>
-                            </GridItem>
+                    {oneObjectWorkdayInfo.securityWorkdays?.map((worker) => {
+                      const isDeleted = deletedSet.has(worker.id)
+                      const isUpdateWorkday = updatedMap.get(worker.id)
 
-                            <GridItem>
-                              <Text fontSize="sm" color="gray.600">
-                                Тип дня:
-                              </Text>
-                              <Text fontWeight="medium">
-                                {WORKDAY_OPTIONS_MAP[worker.workdayStatus]?.label ||
-                                  worker.workdayStatus ||
-                                  'Основной'}
-                              </Text>
-                            </GridItem>
-                          </Grid>
+                      return (
+                        <SecurityDayInfo
+                          key={worker.id}
+                          worker={isUpdateWorkday ? { ...worker, ...isUpdateWorkday } : worker}
+                          isDeleted={isDeleted}
+                          isEditing={isEditing}
+                          addNewWorkday={addNewWorkday}
+                          markForDeletion={markForDeletion}
+                          updateWorkday={updateWorkday}
+                          isEdited={!!isUpdateWorkday}
+                        />
+                      )
+                    })}
 
-                          <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={3}>
-                            <GridItem>
-                              <Text fontSize="sm" color="gray.600">
-                                Статус:
-                              </Text>
-                              <VStack align="stretch" spacing={2}>
-                                <HStack spacing={2}>
-                                  <Badge
-                                    colorScheme={worker.isStarted ? 'green' : 'gray'}
-                                    variant={worker.isStarted ? 'solid' : 'outline'}
-                                  >
-                                    {worker.isStarted ? 'Начал работу' : 'Не начал'}
-                                  </Badge>
-                                  {worker.isStartedComment && (
-                                    <Text fontSize="xs" color="gray.600" noOfLines={1}>
-                                      ({worker.isStartedComment})
-                                    </Text>
-                                  )}
-                                </HStack>
+                    {newWorkdays.length > 0 && (
+                      <>
+                        <Text fontSize="lg" fontWeight="bold" color="gray.700">
+                          Добавленные сотрудники
+                        </Text>
 
-                                <HStack spacing={2}>
-                                  <Badge
-                                    colorScheme={worker.isFinished ? 'blue' : 'gray'}
-                                    variant={worker.isFinished ? 'solid' : 'outline'}
-                                  >
-                                    {worker.isFinished ? 'Завершил' : 'Не завершил'}
-                                  </Badge>
-                                  {worker.isFinishedComment && (
-                                    <Text fontSize="xs" color="gray.600" noOfLines={1}>
-                                      ({worker.isFinishedComment})
-                                    </Text>
-                                  )}
-                                </HStack>
-                              </VStack>
-                            </GridItem>
+                        {newWorkdays.map((worker) => {
+                          const isDeleted = deletedSet.has(worker.id)
 
-                            <GridItem>
-                              <Text fontSize="sm" color="gray.600">
-                                Оплата:
-                              </Text>
-                              <Text
-                                fontWeight="medium"
-                                color={worker.shiftSalary < 1500 ? 'orange.600' : 'green.600'}
-                              >
-                                {worker.shiftSalary} ₽
-                              </Text>
-                            </GridItem>
-                          </Grid>
-                        </Card.Body>
-                      </Card.Root>
-                    ))}
+                          return (
+                            <SecurityDayInfo
+                              key={worker.id}
+                              worker={worker}
+                              isDeleted={isDeleted}
+                              isEditing={isEditing}
+                              addNewWorkday={addNewWorkday}
+                              markForDeletion={removeNewWorkday}
+                              updateWorkday={updateWorkday}
+                              isNewWorkday
+                            />
+                          )
+                        })}
+                      </>
+                    )}
 
                     {(!oneObjectWorkdayInfo.securityWorkdays ||
                       oneObjectWorkdayInfo.securityWorkdays.length === 0) && (
@@ -218,18 +272,83 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
                   <Text color="gray.500">Данные отсутствуют</Text>
                 </VStack>
               )}
+              {isEditing && (
+                <HStack justifyContent="flex-end" w="100%" mt={2}>
+                  <IconButton
+                    onClick={() =>
+                      handleAddWorkday({
+                        shiftSalary: 0,
+                        securityId: 0,
+                        objectWorkdayId: oneObjectWorkdayInfo?.id || 0,
+                        isStarted: false,
+                        isStartedComment: '',
+                        isFinished: false,
+                        isFinishedComment: '',
+                        workdayStatus: WORKDAY_OPTIONS.MAIN.value,
+                      })
+                    }
+                    size="xs"
+                    px={2}
+                    mx="auto"
+                    right={2}
+                  >
+                    <IoIosAdd />
+                    Добавить сотрудника
+                  </IconButton>
+                </HStack>
+              )}
+              {errorMessages.length > 0 && (
+                <Alert.Root status="error" mt={2}>
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Title>Ошибки валидации:</Alert.Title>
+                    <Alert.Description>
+                      <VStack align="start" mt={2}>
+                        {errorMessages.map((message, index) => (
+                          <Text key={index} fontSize="xs">
+                            • {message}
+                          </Text>
+                        ))}
+                      </VStack>
+                    </Alert.Description>
+                  </Alert.Content>
+                </Alert.Root>
+              )}
             </Dialog.Body>
 
-            <Dialog.Footer>
-              <Dialog.ActionTrigger asChild>
-                <Button variant="outline">Закрыть</Button>
-              </Dialog.ActionTrigger>
-              <Button>Редактировать</Button>
-            </Dialog.Footer>
+            <Dialog.Footer flex="0 0 auto">
+              <HStack justifyContent="flex-end" w="100%" gap={2}>
+                {!isEditing && (
+                  <Button variant="outline" onClick={() => setOpen(false)}>
+                    Закрыть
+                  </Button>
+                )}
 
-            <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" position="absolute" top={3} right={3} />
-            </Dialog.CloseTrigger>
+                {isEditing && (
+                  <Button
+                    disabled={isProcessing}
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false)
+                      resetForm()
+                    }}
+                  >
+                    Отменить
+                  </Button>
+                )}
+
+                {isEditing && (
+                  <Button type="submit" disabled={isProcessing} loading={isProcessing}>
+                    Сохранить
+                  </Button>
+                )}
+                {!isEditing && (
+                  <Button htmlType="button" onClick={() => setIsEditing(true)}>
+                    Редактировать
+                  </Button>
+                )}
+              </HStack>
+            </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

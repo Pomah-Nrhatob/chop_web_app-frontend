@@ -1,5 +1,14 @@
-import { Menu, Avatar, Box, Text, Flex, Button, VStack, Spinner } from '@chakra-ui/react'
-import { FiSettings, FiBriefcase, FiLogOut, FiChevronDown } from 'react-icons/fi'
+import { Tooltip } from '@/components/ui/tooltip'
+import { useInvalidateAllDictionaries } from '@/features/dictionary/api/use-invalidate-all-dictionaries'
+import { Menu, Avatar, Box, Text, Flex, Button, VStack, Spinner, Icon } from '@chakra-ui/react'
+import {
+  FiSettings,
+  FiBriefcase,
+  FiLogOut,
+  FiChevronDown,
+  FiRefreshCw,
+  FiInfo,
+} from 'react-icons/fi'
 
 export default function AvatarButton({
   name,
@@ -10,6 +19,9 @@ export default function AvatarButton({
   onCompaniesClick,
   isLoading = false,
 }) {
+  const { invalidateAllDictionaries, isInvalidating: isRefreshingDictionaries } =
+    useInvalidateAllDictionaries()
+
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
@@ -46,6 +58,33 @@ export default function AvatarButton({
                 {email}
               </Text>
             </VStack>
+          </Box>
+
+          <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
+
+          {/* Кнопка обновления справочников */}
+
+          <Box>
+            <Menu.Item
+              closeOnSelect={false}
+              onClick={invalidateAllDictionaries}
+              _hover={{ bg: 'blue.50' }}
+              borderRadius="md"
+              py={2}
+              disabled={isRefreshingDictionaries}
+            >
+              <Flex align="center" gap={3}>
+                {isRefreshingDictionaries ? (
+                  <Spinner size="xs" colorPalette="blue" />
+                ) : (
+                  <FiRefreshCw size={16} />
+                )}
+                <Text>Обновить справочники</Text>
+                <Tooltip content="Если не видите сотрудника или объект в системе - обновите справочники">
+                  <Icon as={FiInfo} size="sm" color="gray.400" ml="auto" />
+                </Tooltip>
+              </Flex>
+            </Menu.Item>
           </Box>
 
           <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />

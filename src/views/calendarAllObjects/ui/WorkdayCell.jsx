@@ -7,7 +7,7 @@ export default function WorkdayCell(
   { workday, openEmptyDay = () => {}, openOneDay = () => {} },
   selectedWorkday
 ) {
-  if (!workday) {
+  if (!workday || workday.totalWorkers < 1) {
     return (
       <Box
         onClick={() => openEmptyDay()}
