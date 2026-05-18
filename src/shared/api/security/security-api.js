@@ -1,6 +1,10 @@
 import { apiClient } from '@/shared/api/api'
 
 export const securityApi = {
+  getSecurityById: async (id) => {
+    return apiClient.get(`/security/${id}`, { needAuth: true })
+  },
+
   getSecurityList: async (filters) => {
     const cleanQuery = Object.fromEntries(
       Object.entries(filters).filter(([_, v]) => v !== '' && v !== undefined)
