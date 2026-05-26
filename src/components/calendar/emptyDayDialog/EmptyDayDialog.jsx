@@ -18,7 +18,7 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import SelectTypeDay from '@/components/calendar/components/SelectTypeDay'
 
-export default function EmptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDayInfo }) {
+export default function emptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDayInfo }) {
   const { day, month, year, objectId, securities } = emptyDayInfo
 
   const { isCreating, handleSubmit, errors, onSubmit, control, resetForm, setValue } =

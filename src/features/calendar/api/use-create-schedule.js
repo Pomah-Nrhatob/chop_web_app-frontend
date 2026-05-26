@@ -17,6 +17,7 @@ export const useCreateSchedule = () => {
       queryClient.invalidateQueries({
         queryKey: ['calendar-allObjects'],
       })
+      queryClient.invalidateQueries({ queryKey: ['calendar-security-workdays'] })
     },
     onError: (err) => {
       console.log(err)

@@ -1,9 +1,10 @@
 'use client'
 
 import { Table, HStack, Flex, Box, IconButton } from '@chakra-ui/react'
-import { LuInfo, LuPencil, LuTrash2 } from 'react-icons/lu'
+import { LuCalendar, LuInfo, LuPencil, LuTrash2 } from 'react-icons/lu'
 
 export const DataTableRow = ({
+  goToCalendar,
   icon: Icon,
   title,
   subContent,
@@ -42,6 +43,16 @@ export const DataTableRow = ({
 
       <Table.Cell textAlign="end">
         <HStack gap={1} justify="flex-end">
+          <IconButton
+            variant="ghost"
+            size="sm"
+            colorPalette="blue"
+            onClick={goToCalendar}
+            title="Календарь"
+          >
+            <LuCalendar size={16} />
+          </IconButton>
+
           <IconButton
             variant="ghost"
             size="sm"
