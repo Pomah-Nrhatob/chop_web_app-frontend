@@ -211,6 +211,9 @@ export default function SecurityCalendar() {
             const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
             const isToday = isSameDay(day, new Date())
 
+            // Проверяем, принадлежит ли день текущему месяцу
+            const isCurrentMonth = isSameMonth(day, monthStart)
+
             // ✅ ИСПРАВЛЕНО: Для персонального календаря день заполнен, если к нему привязана хотя бы одна смена
             const isDayPopulated = dayShifts.length > 0
 
@@ -223,10 +226,15 @@ export default function SecurityCalendar() {
                 bg={isSelected ? 'blue.500' : 'transparent'}
                 color={isSelected ? 'white' : 'black'}
                 p={1}
-                cursor="pointer"
+                // Меняем курсор в зависимости от месяца
+                cursor={isCurrentMonth ? 'pointer' : 'default'}
                 transition="0.1s"
-                _hover={{ bg: isSelected ? 'blue.600' : 'gray.50' }}
+                // Отключаем эффект ховера для чужого месяца
+                _hover={isCurrentMonth ? { bg: isSelected ? 'blue.600' : 'gray.50' } : undefined}
                 onClick={() => {
+                  // 🛑 ДОБАВЛЕНО: Если день не из этого месяца, прерываем выполнение клика
+                  if (!isCurrentMonth) return
+
                   if (isDayPopulated) {
                     // ✅ ИСПРАВЛЕНО: Безопасно извлекаем objectWorkdayId из объекта смены (как указано в DTO)
                     const firstShift = dayShifts[0]
@@ -241,7 +249,7 @@ export default function SecurityCalendar() {
                     handleDateClick(day)
                   }
                 }}
-                opacity={isSameMonth(day, monthStart) ? 1 : 0.3}
+                opacity={isCurrentMonth ? 1 : 0.3}
               >
                 <Text fontWeight={isToday ? 'bold' : 'medium'} fontSize="sm">
                   {format(day, 'd')}
@@ -267,10 +275,13 @@ export default function SecurityCalendar() {
                           }
                           fontSize="2xs"
                           variant="solid"
-                          cursor="pointer"
+                          // Клик по бейджу внутри чужого месяца тоже можно заблокировать при желании
+                          cursor={isCurrentMonth ? 'pointer' : 'default'}
                           onClick={(e) => {
                             e.stopPropagation() // Предотвращает ложный клик по ячейке Box
-                            handleShiftClick(e, shift)
+                            if (isCurrentMonth) {
+                              handleShiftClick(e, shift)
+                            }
                           }}
                         >
                           {objectTitle}
