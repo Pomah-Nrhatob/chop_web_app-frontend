@@ -185,6 +185,9 @@ export default function ObjectCalendar() {
             const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
             const isToday = isSameDay(day, new Date())
 
+            // Проверяем, принадлежит ли день текущему месяцу
+            const isCurrentMonth = isSameMonth(day, monthStart)
+
             // Считаем общее количество людей во всех сменах этого дня
             const totalWorkersInDay = dayShifts.reduce(
               (sum, shift) => sum + (shift.totalWorkers || 0),
@@ -202,10 +205,15 @@ export default function ObjectCalendar() {
                 bg={isSelected ? 'blue.500' : 'transparent'}
                 color={isSelected ? 'white' : 'black'}
                 p={1}
-                cursor="pointer"
+                // Меняем курсор в зависимости от месяца
+                cursor={isCurrentMonth ? 'pointer' : 'default'}
                 transition="0.1s"
-                _hover={{ bg: isSelected ? 'blue.600' : 'gray.50' }}
+                // Отключаем эффект ховера для чужого месяца
+                _hover={isCurrentMonth ? { bg: isSelected ? 'blue.600' : 'gray.50' } : undefined}
                 onClick={() => {
+                  // 🛑 ДОБАВЛЕНО: Прерываем клик, если день из другого месяца
+                  if (!isCurrentMonth) return
+
                   if (isDayPopulated) {
                     // ИСПРАВЛЕНО: Берем id из первой смены текущего дня (или подставьте нужное поле id рабочего дня)
                     const workdayId = dayShifts[0]?.objectWorkdayId || dayShifts[0]?.id
@@ -216,7 +224,7 @@ export default function ObjectCalendar() {
                     handleDateClick(day)
                   }
                 }}
-                opacity={isSameMonth(day, monthStart) ? 1 : 0.3}
+                opacity={isCurrentMonth ? 1 : 0.3}
               >
                 <Text fontWeight={isToday ? 'bold' : 'medium'} fontSize="sm">
                   {format(day, 'd')}
@@ -235,10 +243,15 @@ export default function ObjectCalendar() {
                           colorPalette={isSelected ? 'whiteAlpha' : 'orange'}
                           fontSize="2xs"
                           variant="solid"
-                          cursor="pointer"
+                          // Меняем курсор бейджа для чужого месяца
+                          cursor={isCurrentMonth ? 'pointer' : 'default'}
                           onClick={(e) => {
                             e.stopPropagation() // ИСПРАВЛЕНО: Предотвращает ложный клик по Box
-                            handleShiftClick(e, shift)
+
+                            // Блокируем клик по бейджу, если месяц чужой
+                            if (isCurrentMonth) {
+                              handleShiftClick(e, shift)
+                            }
                           }}
                         >
                           {`В смене: ${shift.totalWorkers}`}
