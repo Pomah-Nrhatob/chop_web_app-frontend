@@ -223,6 +223,7 @@ export const useEditDayForm = (initialData, onSuccess = null, onSuccessError = n
         // Не вызываем onSuccess
         queryClient.invalidateQueries({ queryKey: ['oneObjectWorkdayInfo'] })
         queryClient.invalidateQueries({ queryKey: ['oneSecurityWorkdayInfo'] })
+
         return false
       }
 
@@ -261,6 +262,8 @@ export const useEditDayForm = (initialData, onSuccess = null, onSuccessError = n
 
         queryClient.invalidateQueries({ queryKey: ['calendar-allObjects'] })
         queryClient.invalidateQueries({ queryKey: ['calendar-security-workdays'] })
+
+        queryClient.invalidateQueries({ queryKey: ['calendar-oneDay'] })
       }
 
       return true

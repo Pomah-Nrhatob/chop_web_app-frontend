@@ -45,9 +45,11 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
   } = useEditDayForm(
     {},
     () => {
+      resetForm()
       setIsEditing(false)
     },
     () => {
+      resetForm()
       setIsEditing(false)
     }
   )

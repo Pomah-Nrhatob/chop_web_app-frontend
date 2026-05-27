@@ -5,12 +5,12 @@ import { useCalendarAllObjects } from '@/features/calendar/api/use-calendarAllOb
 import { useCalendarAllObjectsStore } from '@/features/calendar/store/useCalendarAllObjectsStore'
 import WorkdayCell from '@/views/calendarAllObjects/ui/WorkdayCell'
 import HeaderButtons from '@/views/calendarAllObjects/ui/HeaderButtons'
-import CalendarPagination from '@/views/calendarAllObjects/ui/Pagination'
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
 import { MdAdd, MdFolderOpen } from 'react-icons/md'
 import { useState } from 'react'
 import OneDayDialog from '@/components/calendar/oneDayDialog/OneDayDialog'
 import EmptyDayDialog from '@/components/calendar/emptyDayDialog/EmptyDayDialog'
+import CalendarPagination from '@/components/calendar/components/CalendarPagination'
 
 const TOTAL_COLUMNS = 6
 
@@ -21,7 +21,7 @@ const getDayName = (dayNum, year, month) => {
 }
 
 export default function CalendarAllObjects() {
-  const { queryParams, getDaysInMonth } = useCalendarAllObjectsStore()
+  const { queryParams, getDaysInMonth, setQueryParams } = useCalendarAllObjectsStore()
   const { allObjectsWorkdays, isLoading, isFetching, refetch } = useCalendarAllObjects(queryParams)
 
   const { data: objectsDictionary = [] } = useGetDictionaryObjects()
@@ -276,7 +276,11 @@ export default function CalendarAllObjects() {
             )}
           </Box>
           {allObjectsWorkdays?.meta.total > allObjectsWorkdays?.meta.limit ? (
-            <CalendarPagination meta={allObjectsWorkdays?.meta} />
+            <CalendarPagination
+              queryParams={queryParams}
+              setQueryParams={setQueryParams}
+              meta={allObjectsWorkdays?.meta}
+            />
           ) : null}
         </Box>
       </VStack>
