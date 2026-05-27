@@ -1,10 +1,7 @@
-import { useCalendarAllObjectsStore } from '@/features/calendar/store/useCalendarAllObjectsStore'
 import { ButtonGroup, IconButton, Pagination } from '@chakra-ui/react'
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi'
 
-export default function CalendarPagination({ meta }) {
-  const { queryParams, setQueryParams } = useCalendarAllObjectsStore()
-
+export default function CalendarPagination({ meta, queryParams, setQueryParams }) {
   return (
     <Pagination.Root
       width="full"

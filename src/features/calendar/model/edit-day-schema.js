@@ -15,7 +15,7 @@ const baseWorkdaySchema = z.object({
 })
 
 // Схема для существующих записей (с ID)
-const updatedWorkdaySchema = baseWorkdaySchema.extend({
+export const updatedWorkdaySchema = baseWorkdaySchema.extend({
   id: z.number().int().positive('ID записи должен быть положительным числом'),
 })
 
