@@ -22,6 +22,7 @@ import { FiChevronRight, FiChevronLeft } from 'react-icons/fi'
 import { useState, useEffect, useRef } from 'react'
 import { navItems } from '@/widgets/sideBar/data/navItems'
 import { useClickOutside } from '@/shared/hooks/useClickOutside'
+import Link from 'next/link'
 
 const HEADER_HEIGHT = '79px'
 const SIDEBAR_WIDTH = '280px'
@@ -96,21 +97,23 @@ export function SidebarNav({ onToggle, collapsedWidth = COLLAPSED_WIDTH }) {
   const NavigationContent = () => (
     <VStack align="stretch" gap={1} px={desktopCollapsed && !isMobile ? 2 : 4}>
       {navItems.map((item) => (
-        <Button
-          key={item.href}
-          variant="ghost"
-          justifyContent={desktopCollapsed && !isMobile ? 'center' : 'flex-start'}
-          size="md"
-          onClick={() => handleNavigate(item.href)}
-          whiteSpace="nowrap"
-          overflow="hidden"
-          title={desktopCollapsed && !isMobile ? item.label : undefined}
-        >
-          <Icon color="gray.500">{item.icon}</Icon>
-          {(!desktopCollapsed || isMobile) && (
-            <Text style={{ marginLeft: '8px' }}>{item.label}</Text>
-          )}
-        </Button>
+        <Link key={item.href} href={item.href}>
+          <Button
+            // key={item.href}
+            variant="ghost"
+            justifyContent={desktopCollapsed && !isMobile ? 'center' : 'flex-start'}
+            size="md"
+            // onClick={() => handleNavigate(item.href)}
+            whiteSpace="nowrap"
+            overflow="hidden"
+            title={desktopCollapsed && !isMobile ? item.label : undefined}
+          >
+            <Icon color="gray.500">{item.icon}</Icon>
+            {(!desktopCollapsed || isMobile) && (
+              <Text style={{ marginLeft: '8px' }}>{item.label}</Text>
+            )}
+          </Button>
+        </Link>
       ))}
     </VStack>
   )
