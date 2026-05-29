@@ -73,7 +73,7 @@ export default function CalendarToday() {
   }, [updatedWorkdays])
 
   const onSubmit = () => {
-    console.log('submit')
+    resetForm()
   }
 
   return (
@@ -83,6 +83,7 @@ export default function CalendarToday() {
         spacing={{ base: 3, md: 6 }}
         p={{ base: 3, md: 6 }}
         mt={{ base: 10, md: 0 }}
+        mb={{ base: '90px', md: '80px' }}
         bg="white"
         borderRadius="xl"
         shadow="lg"
@@ -246,7 +247,7 @@ export default function CalendarToday() {
                           minH="70px"
                           bg="gray.50"
                           border="2px solid"
-                          borderColor="green.200"
+                          borderColor="gray.300"
                           borderRadius="lg"
                           p={{ base: 3, md: 4 }}
                           shadow="sm"
@@ -276,9 +277,9 @@ export default function CalendarToday() {
                               })}
                             </VStack>
                           ) : (
-                            <Text color="gray.400" fontStyle="italic">
-                              Нет работников
-                            </Text>
+                            <Flex h="full" alignItems="center">
+                              <Text color="gray.400">Нет работников</Text>
+                            </Flex>
                           )}
                         </Box>
                       </GridItem>
@@ -290,42 +291,8 @@ export default function CalendarToday() {
           </Box>
         </Box>
 
-        <ActionBar.Root open={true} closeOnInteractOutside={false}>
-          <Portal>
-            <ActionBar.Positioner>
-              <ActionBar.Content>
-                <ActionBar.Separator />
-                <Button
-                  onClick={resetForm}
-                  disabled={!updatedWorkdays.length > 0 || isProcessing}
-                  colorPalette="red"
-                  variant="outline"
-                  size="sm"
-                >
-                  <MdOutlineCancel />
-                  Сбросить
-                </Button>
-                <Button
-                  onClick={() => {
-                    // Программно вызвать отправку формы
-                    handleSubmit(onSubmit)()
-                  }}
-                  disabled={!updatedWorkdays.length > 0 || isProcessing}
-                  loading={isProcessing}
-                  colorPalette="green"
-                  variant="outline"
-                  size="sm"
-                >
-                  <CiSaveDown1 />
-                  Сохранить изменения
-                </Button>
-              </ActionBar.Content>
-            </ActionBar.Positioner>
-          </Portal>
-        </ActionBar.Root>
-
         {oneDayWorkdays?.meta.total > oneDayWorkdays?.meta.limit ? (
-          <Box mb={{ base: '70px', md: '60px' }}>
+          <Box>
             <CalendarPagination
               queryParams={queryParams}
               setQueryParams={setQueryParams}
@@ -334,6 +301,39 @@ export default function CalendarToday() {
           </Box>
         ) : null}
       </VStack>
+
+      <ActionBar.Root open={true} closeOnInteractOutside={false}>
+        <Portal>
+          <ActionBar.Positioner>
+            <ActionBar.Content>
+              <ActionBar.Separator />
+              <Button
+                onClick={resetForm}
+                disabled={!updatedWorkdays.length > 0 || isProcessing}
+                variant="outline"
+                size="sm"
+              >
+                <MdOutlineCancel />
+                Сбросить
+              </Button>
+              <Button
+                onClick={() => {
+                  // Программно вызвать отправку формы
+                  handleSubmit(onSubmit)()
+                }}
+                disabled={!updatedWorkdays.length > 0 || isProcessing}
+                loading={isProcessing}
+                colorPalette="green"
+                variant="outline"
+                size="sm"
+              >
+                <CiSaveDown1 />
+                Сохранить изменения
+              </Button>
+            </ActionBar.Content>
+          </ActionBar.Positioner>
+        </Portal>
+      </ActionBar.Root>
     </>
   )
 }
