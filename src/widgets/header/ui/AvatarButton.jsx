@@ -1,3 +1,4 @@
+import TransitionLink from '@/components/transitionLink/TransitionLink'
 import { Tooltip } from '@/components/ui/tooltip'
 import { useInvalidateAllDictionaries } from '@/features/dictionary/api/use-invalidate-all-dictionaries'
 import { Menu, Avatar, Box, Text, Flex, Button, VStack, Spinner, Icon } from '@chakra-ui/react'
@@ -90,19 +91,24 @@ export default function AvatarButton({
           <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
 
           {/* Кнопки навигации */}
-          <Menu.Item onClick={onProfileClick} _hover={{ bg: 'gray.50' }} borderRadius="md" py={2}>
-            <Flex align="center" gap={3}>
-              <FiSettings size={16} />
-              <Text>Управление профилем</Text>
-            </Flex>
-          </Menu.Item>
 
-          <Menu.Item onClick={onCompaniesClick} _hover={{ bg: 'gray.50' }} borderRadius="md" py={2}>
-            <Flex align="center" gap={3}>
-              <FiBriefcase size={16} />
-              <Text>Компании</Text>
-            </Flex>
-          </Menu.Item>
+          <TransitionLink href="/profile">
+            <Menu.Item _hover={{ bg: 'gray.50' }} borderRadius="md" py={2}>
+              <Flex align="center" gap={3}>
+                <FiSettings size={16} />
+                <Text>Управление профилем</Text>
+              </Flex>
+            </Menu.Item>
+          </TransitionLink>
+
+          <TransitionLink href="/company">
+            <Menu.Item _hover={{ bg: 'gray.50' }} borderRadius="md" py={2}>
+              <Flex align="center" gap={3}>
+                <FiBriefcase size={16} />
+                <Text>Компании</Text>
+              </Flex>
+            </Menu.Item>
+          </TransitionLink>
 
           <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
 
