@@ -10,7 +10,6 @@ import { FaBusinessTime } from 'react-icons/fa'
 import HeaderContainer from '@/widgets/header/ui/HeaderContainer'
 import AvatarButton from '@/widgets/header/ui/AvatarButton'
 import { SelectActiveCompany } from '@/widgets/header/ui/SelectActiveCompany'
-import TransitionLink from '@/components/transitionLink/TransitionLink'
 
 export const Header = () => {
   const { user, isLoading } = useUser()
@@ -32,14 +31,14 @@ export const Header = () => {
           <Box display="flex" alignItems="center" gap="5">
             {/* ✅ Показываем кнопку только НЕ на /bc страницах */}
             {showCrmButton && (
-              <TransitionLink href="/bc">
-                <Button variant="ghost" rounded="md">
+              <Button variant="ghost" rounded="md">
+                <Link href="/bc">
                   <Flex align="center" gap={2}>
                     <FaBusinessTime color="gray" />
                     <Text>Crm система</Text>
                   </Flex>
-                </Button>
-              </TransitionLink>
+                </Link>
+              </Button>
             )}
 
             {!isLoading ? (
@@ -68,11 +67,9 @@ export const Header = () => {
             />
           </Box>
         ) : (
-          <TransitionLink href="/login">
-            <Button colorPalette="teal" variant="solid">
-              Войти <CiLogin />
-            </Button>
-          </TransitionLink>
+          <Button colorPalette="teal" variant="solid" onClick={() => router.push('login')}>
+            Войти <CiLogin />
+          </Button>
         )}
       </Flex>
     </HeaderContainer>
