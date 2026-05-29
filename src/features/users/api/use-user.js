@@ -52,6 +52,10 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
         queryKey: ['calendar-allObjects'],
       })
 
+      queryClient.invalidateQueries({
+        queryKey: ['calendar-oneDay'],
+      })
+
       queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
       queryClient.invalidateQueries({ queryKey: ['objects'] })
       queryClient.invalidateQueries({ queryKey: ['securities'] })

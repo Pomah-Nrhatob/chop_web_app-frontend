@@ -3,11 +3,14 @@
 import { ConfirmActionDialog } from '@/components/ui/ConfirmActionDialog'
 import { useChangeActiveCompany } from '@/features/users/api/use-user'
 import { NativeSelect, Box, Flex } from '@chakra-ui/react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 
 export function SelectActiveCompany({ companies = [], activeCompany }) {
   const validCompanies = (companies || []).filter((c) => c?.id && typeof c.id === 'string')
+
+  const router = useRouter()
 
   const initialValue = validCompanies.length > 0 ? activeCompany : null
   const [value, setValue] = useState(initialValue)
@@ -21,6 +24,7 @@ export function SelectActiveCompany({ companies = [], activeCompany }) {
   const { changeActiveCompany, isLoading } = useChangeActiveCompany(() => {
     setIsOpenConfirm(false)
     setSelectedCompany(null)
+    router.push('/bc')
   })
 
   const handleChangeActiveCompany = () => {
