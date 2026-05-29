@@ -1,3 +1,4 @@
+import TransitionLink from '@/components/transitionLink/TransitionLink'
 import { Flex, Text } from '@chakra-ui/react'
 import Link from 'next/link'
 
@@ -12,9 +13,11 @@ export default function HeaderContainer({ children }) {
       justify="space-between"
       alignItems="center"
     >
-      <Text fontSize={12} fontWeight="bold">
-        <Link href="/">CHOP CRM</Link>
-      </Text>
+      <TransitionLink href="/">
+        <Text fontSize={12} fontWeight="bold">
+          CHOP CRM
+        </Text>
+      </TransitionLink>
       {children}
     </Flex>
   )
