@@ -57,10 +57,18 @@ export default function CalendarToday() {
 
   const { data: objectsDictionary = [] } = useGetDictionaryObjects()
 
-  const { updateWorkday, handleSubmit, resetForm, control, errors, isProcessing, watch } =
-    useEditDaysAllObjectsForm({}, () => {
-      resetForm()
-    })
+  const {
+    updateWorkday,
+    handleSubmit,
+    resetForm,
+    control,
+    errors,
+    isProcessing,
+    watch,
+    clearUpdateForm,
+  } = useEditDaysAllObjectsForm(null, () => {
+    resetForm()
+  })
 
   const updatedWorkdays = useWatch({ name: 'updatedWorkdays', control }) || []
 
@@ -73,7 +81,7 @@ export default function CalendarToday() {
   }, [updatedWorkdays])
 
   const onSubmit = () => {
-    resetForm()
+    clearUpdateForm()
   }
 
   return (
@@ -302,13 +310,13 @@ export default function CalendarToday() {
         ) : null}
       </VStack>
 
-      <ActionBar.Root open={true} closeOnInteractOutside={false}>
+      <ActionBar.Root open={updatedWorkdays.length > 0} closeOnInteractOutside={false}>
         <Portal>
-          <ActionBar.Positioner>
+          <ActionBar.Positioner style={{ zIndex: 2000 }}>
             <ActionBar.Content>
               <ActionBar.Separator />
               <Button
-                onClick={resetForm}
+                onClick={clearUpdateForm}
                 disabled={!updatedWorkdays.length > 0 || isProcessing}
                 variant="outline"
                 size="sm"

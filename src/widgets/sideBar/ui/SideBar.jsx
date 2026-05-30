@@ -95,9 +95,15 @@ export function SidebarNav({ onToggle, collapsedWidth = COLLAPSED_WIDTH }) {
   )
 
   const NavigationContent = () => (
-    <VStack align="stretch" gap={1} px={desktopCollapsed && !isMobile ? 2 : 4}>
+    <VStack
+      align="stretch"
+      alignItems={desktopCollapsed && !isMobile ? 'center' : 'flex-start'}
+      gap={1}
+      px={desktopCollapsed && !isMobile ? 2 : 4}
+    >
       {navItems.map((item) => (
         <Link
+          style={{ display: 'block', width: '100%' }}
           onClick={() => {
             if (isMobile) setMobileOpen(false)
             else setDesktopCollapsed(true)
@@ -107,6 +113,7 @@ export function SidebarNav({ onToggle, collapsedWidth = COLLAPSED_WIDTH }) {
         >
           <Button
             // key={item.href}
+            w="100%"
             variant="ghost"
             justifyContent={desktopCollapsed && !isMobile ? 'center' : 'flex-start'}
             size="md"
