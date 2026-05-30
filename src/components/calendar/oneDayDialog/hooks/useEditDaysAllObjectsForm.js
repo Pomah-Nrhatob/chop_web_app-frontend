@@ -140,6 +140,10 @@ export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
     return getValues('updatedWorkdays').find((w) => w.id === id)
   }, [])
 
+  const clearUpdateForm = () => {
+    resetForm({ updatedWorkdays: [] })
+  }
+
   return {
     register,
     handleSubmit: (onValid) =>
@@ -158,5 +162,6 @@ export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
     clearErrors,
     getUpdatedWorkday,
     isProcessing,
+    clearUpdateForm,
   }
 }
