@@ -124,7 +124,7 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
   const foundObject = objects.find((obj) => obj.id === oneObjectWorkdayInfo?.securityObjectId)
 
   const onSubmit = () => {
-    console.log('submit')
+    setOpen(false)
   }
 
   return (
