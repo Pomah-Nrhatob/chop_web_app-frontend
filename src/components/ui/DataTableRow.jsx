@@ -2,9 +2,12 @@
 
 import { Table, HStack, Flex, Box, IconButton } from '@chakra-ui/react'
 import { LuCalendar, LuInfo, LuPencil, LuTrash2 } from 'react-icons/lu'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation' // ✅ Для авто-скрытия на странице календаря
 
 export const DataTableRow = ({
   goToCalendar,
+  calendarHref,
   icon: Icon,
   title,
   subContent,
@@ -13,7 +16,21 @@ export const DataTableRow = ({
   onDelete,
   isDeleting,
   actionsColor = 'blue',
+  // ✅ Новые пропсы для управления видимостью кнопок
+  showEdit = true,
+  showDelete = true,
+  // ✅ Опционально: скрыть кнопки, если мы на странице календаря этого объекта
+  hideOnCalendarPage = false,
 }) => {
+  const pathname = usePathname()
+
+  // ✅ Авто-определение: если мы на странице календаря и включён флаг — скрываем
+  const isCalendarPage = hideOnCalendarPage && pathname?.includes('/calendar/')
+
+  // Итоговые флаги видимости
+  const shouldShowEdit = showEdit && !isCalendarPage
+  const shouldShowDelete = showDelete && !isCalendarPage
+
   return (
     <Table.Row _hover={{ bg: 'gray.50/50' }} transition="background 0.2s ease">
       <Table.Cell py={3}>
@@ -43,16 +60,32 @@ export const DataTableRow = ({
 
       <Table.Cell textAlign="end">
         <HStack gap={1} justify="flex-end">
-          <IconButton
-            variant="ghost"
-            size="sm"
-            colorPalette="blue"
-            onClick={goToCalendar}
-            title="Календарь"
-          >
-            <LuCalendar size={16} />
-          </IconButton>
+          {/* Календарь */}
+          {calendarHref ? (
+            <Link href={calendarHref} style={{ display: 'inline-flex' }}>
+              <IconButton
+                variant="ghost"
+                size="sm"
+                colorPalette="blue"
+                title="Календарь"
+                tabIndex={-1}
+              >
+                <LuCalendar size={16} />
+              </IconButton>
+            </Link>
+          ) : (
+            <IconButton
+              variant="ghost"
+              size="sm"
+              colorPalette="blue"
+              onClick={goToCalendar}
+              title="Календарь"
+            >
+              <LuCalendar size={16} />
+            </IconButton>
+          )}
 
+          {/* Детали — всегда показываем */}
           <IconButton
             variant="ghost"
             size="sm"
@@ -63,26 +96,32 @@ export const DataTableRow = ({
             <LuInfo size={16} />
           </IconButton>
 
-          <IconButton
-            variant="ghost"
-            size="sm"
-            colorPalette="orange"
-            onClick={onEdit}
-            title="Редактировать"
-          >
-            <LuPencil size={16} />
-          </IconButton>
+          {/* ✅ Редактировать — условный рендер */}
+          {shouldShowEdit && (
+            <IconButton
+              variant="ghost"
+              size="sm"
+              colorPalette="orange"
+              onClick={onEdit}
+              title="Редактировать"
+            >
+              <LuPencil size={16} />
+            </IconButton>
+          )}
 
-          <IconButton
-            variant="ghost"
-            size="sm"
-            colorPalette="red"
-            onClick={onDelete}
-            loading={isDeleting}
-            title="Удалить"
-          >
-            <LuTrash2 size={16} />
-          </IconButton>
+          {/* ✅ Удалить — условный рендер */}
+          {shouldShowDelete && (
+            <IconButton
+              variant="ghost"
+              size="sm"
+              colorPalette="red"
+              onClick={onDelete}
+              loading={isDeleting}
+              title="Удалить"
+            >
+              <LuTrash2 size={16} />
+            </IconButton>
+          )}
         </HStack>
       </Table.Cell>
     </Table.Row>

@@ -1,65 +1,79 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Box, SimpleGrid, Text, VStack, HStack, Button, Badge, Heading } from '@chakra-ui/react'
-import { format, isSameMonth, isSameDay, addMonths, subMonths, parseISO } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import ObjectList from '../../ui/ObjectList'
+import React, { useState, useMemo } from 'react'
+import { Box, VStack, Button, Heading, Text, Spinner, Flex } from '@chakra-ui/react'
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  parseISO,
+  getYear,
+  getMonth,
+} from 'date-fns'
 import { LuChevronDown, LuChevronUp } from 'react-icons/lu'
 import { useParams } from 'next/navigation'
-import { useGetCalendarObjectWorkdays } from '@/features/calendar-object/api/use-get-calendar-workdays'
 
-// ИМПОРТЫ ДИАЛОГОВЫХ ОКЕН
+// Хуки
+import { useGetCalendarObjectWorkdays } from '@/features/calendar-object/api/use-get-calendar-workdays'
+import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
+
+// Компоненты
+import ObjectList from '../../ui/ObjectList'
 import EmptyDayDialogObjects from '@/components/calendar/emptyDayDialog/EmptyDialogObjects'
 import OneDayDialog from '@/components/calendar/oneDayDialog/OneDayDialog'
-import { useObjectCalendar } from '../../hooks.js/useObjectCalendar'
+import CalendarHeader from './CalendarHeader'
+import CalendarGrid from './CalendarGrid'
+import CalendarActionBar from './CalendarActionBar'
 
 export default function ObjectCalendar() {
+  // ─── STATE ─────────────────────────────────────────────────
+  const [calendarMode, setCalendarMode] = useState('view')
+  const [expandedCells, setExpandedCells] = useState({})
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedDates, setSelectedDates] = useState([])
+  const [isListOpen, setIsListOpen] = useState(false)
+  const [openOneDayDialog, setOpenOneDayDialog] = useState(false)
+  const [openEmptyDayDialog, setOpenEmptyDayDialog] = useState(false)
+  const [emptyDayInfo, setEmptyDayInfo] = useState({})
+  const [selectedWorkday, setSelectedWorkday] = useState(null)
+
+  // ─── PARAMS & DATA ─────────────────────────────────────────
   const params = useParams()
   const securityObjectId = Number(params.id)
 
-  const {
-    currentMonth,
-    setCurrentMonth,
-    year,
-    month,
-    currentMonthDays,
-    calendarDays,
-    monthStart,
-    objectsDictionary,
-    openOneDayDialog,
-    setOpenOneDayDialog,
-    openEmptyDayDialog,
-    setOpenEmptyDayDialog,
-    emptyDayInfo,
-    setEmptyDayInfo,
-    selectedWorkday,
-    setSelectedWorkday,
-    selectedDates,
-    setSelectedDates,
-    handleDateClick,
-    selectAllDays,
-    isListOpen,
-    setIsListOpen,
-  } = useObjectCalendar()
+  // ✅ 1. Добавь isLoading к хуку словаря
+  const { data: objectsDictionary = [], isLoading: isDictLoading } = useGetDictionaryObjects()
 
-  // ДОБАВЛЕНО: Находим текущий объект в словаре по ID из URL
-  const currentObject = objectsDictionary.find((el) => el.id === securityObjectId)
-  const objectTitle = currentObject ? currentObject.title : `Объект #${securityObjectId}`
+  // ✅ 2. Создай стабильный заголовок
+  const stableTitle = useMemo(() => {
+    if (isDictLoading || !objectsDictionary?.length) {
+      return `Объект #${securityObjectId}`
+    }
+    const currentObject = objectsDictionary.find((el) => el.id === securityObjectId)
+    return currentObject ? currentObject.title : `Объект #${securityObjectId}`
+  }, [isDictLoading, objectsDictionary, securityObjectId])
 
-  // Получение смен текущего объекта с бэкенда
+  // ✅ 3. УДАЛИ objectTitle — он больше не нужен (источник гидратационных ошибок)
+  // const currentObject = objectsDictionary.find((el) => el.id === securityObjectId)
+  // const objectTitle = currentObject ? currentObject.title : `Объект #${securityObjectId}`
+
+  const year = getYear(currentMonth)
+  const month = getMonth(currentMonth) + 1
+
   const {
     data: serverShifts,
     isLoading,
     isError,
-  } = useGetCalendarObjectWorkdays({
-    securityObjectId,
-    year,
-    month,
-  })
+    isFetching,
+  } = useGetCalendarObjectWorkdays({ securityObjectId, year, month })
 
-  // Преобразуем строковые timestamp от бэкенда в валидные JS Date объекты
-  const shifts = React.useMemo(() => {
+  const shifts = useMemo(() => {
     if (!serverShifts || !Array.isArray(serverShifts)) return []
     return serverShifts.map((shift) => ({
       ...shift,
@@ -68,40 +82,70 @@ export default function ObjectCalendar() {
     }))
   }, [serverShifts])
 
-  const selectDaysWithoutShifts = () => {
-    const emptyDays = currentMonthDays.filter((day) => {
-      // Находим все смены, привязанные к текущему дню
-      const dayShifts = shifts.filter((shift) => isSameDay(shift.parsedDate, day))
+  // ─── CALENDAR GENERATION ───────────────────────────────────
+  const monthStart = startOfMonth(currentMonth)
+  const calendarDays = eachDayOfInterval({
+    start: startOfWeek(monthStart, { weekStartsOn: 1 }),
+    end: endOfWeek(endOfMonth(monthStart), { weekStartsOn: 1 }),
+  })
+  const currentMonthDays = calendarDays.filter((day) => isSameMonth(day, monthStart))
 
-      // Считаем общее количество людей в этих сменах
-      const totalWorkersInDay = dayShifts.reduce((sum, shift) => sum + (shift.totalWorkers || 0), 0)
-
-      // День считается ПУСТЫМ, если смен нет вообще ИЛИ сумма рабочих равна 0
-      return dayShifts.length === 0 || totalWorkersInDay === 0
-    })
-
-    setSelectedDates(emptyDays)
+  // ─── HANDLERS ──────────────────────────────────────────────
+  const handleDateClick = (day) => {
+    setSelectedDates((prev) =>
+      prev.some((d) => isSameDay(d, day)) ? prev.filter((d) => !isSameDay(d, day)) : [...prev, day]
+    )
   }
 
-  // Клик строго по бейджу существующей смены
+  const handleDayCellClick = (day) => {
+    if (!isSameMonth(day, monthStart)) return
+    const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
+    if (calendarMode === 'view' && dayShifts[0]?.id) {
+      setSelectedWorkday(dayShifts[0].objectWorkdayId || dayShifts[0].id)
+      setOpenOneDayDialog(true)
+    } else {
+      handleDateClick(day)
+    }
+  }
+
   const handleShiftClick = (e, shift) => {
-    e.stopPropagation() // Предотвращаем срабатывание клика по самой ячейке Box
-    setSelectedWorkday(shift.id) // Передаем ID смены в стейт для модалки
+    e.stopPropagation()
+    if (calendarMode === 'edit') return
+    setSelectedWorkday(shift.id)
     setOpenOneDayDialog(true)
   }
 
-  // Клик по кнопке «Назначить смену» в синей нижней панели
-  const handleOpenCreateDialog = () => {
-    setEmptyDayInfo({
-      objectId: securityObjectId,
-      dates: selectedDates, // Передаем массив всех выделенных дат в EmptyDayDialog
+  const handleToggleExpand = (dayKey) =>
+    setExpandedCells((prev) => ({ ...prev, [dayKey]: !prev[dayKey] }))
+  const handleDateChange = ({ year: y, month: m }) => setCurrentMonth(new Date(y, m - 1, 1))
+  const handleModeChange = (mode) => {
+    setCalendarMode(mode)
+    if (mode === 'view') setSelectedDates([])
+  }
+
+  const selectAllDays = () => setSelectedDates(currentMonthDays)
+  const selectDaysWithoutShifts = () => {
+    const emptyDays = currentMonthDays.filter((day) => {
+      const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
+      const total = dayShifts.reduce((sum, s) => sum + (s.totalWorkers || 0), 0)
+      return dayShifts.length === 0 || total === 0
     })
+    setSelectedDates(emptyDays)
+  }
+
+  const handleOpenCreateDialog = () => {
+    setEmptyDayInfo({ objectId: securityObjectId, dates: selectedDates })
     setOpenEmptyDayDialog(true)
   }
 
-  if (isLoading) return <div>Загрузка календаря...</div>
-  if (isError) return <div>Ошибка загрузки данных с сервера</div>
+  // ─── LOADING / ERROR ───────────────────────────────────────
+  // ✅ 4. Ждём загрузки И словаря, И смен
+  if (isDictLoading || isLoading || isFetching) {
+    return <CalendarLoader title={`Объект #${securityObjectId}`} />
+  }
+  if (isError) return <CalendarError title={stableTitle} />
 
+  // ─── RENDER ────────────────────────────────────────────────
   return (
     <>
       <OneDayDialog
@@ -110,16 +154,16 @@ export default function ObjectCalendar() {
         selectedWorkday={selectedWorkday}
         setSelectedWorkday={setSelectedWorkday}
       />
-      {/* ДИАЛОГ МАССОВОГО СОЗДАНИЯ СМЕН ДЛЯ ВЫБРАННЫХ ДНЕЙ */}
       <EmptyDayDialogObjects
         emptyDayInfo={emptyDayInfo}
         setEmptyDayInfo={setEmptyDayInfo}
         open={openEmptyDayDialog}
         setOpen={setOpenEmptyDayDialog}
-        onSuccessAction={() => setSelectedDates([])} // Очистит выбор дней при успешном сохранении формы
+        onSuccessAction={() => setSelectedDates([])}
       />
 
       <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+        {/* Заголовок объекта */}
         <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
           <Text
             fontSize="sm"
@@ -130,11 +174,13 @@ export default function ObjectCalendar() {
           >
             Календарь расписания
           </Text>
+          {/* ✅ 5. Используем stableTitle вместо objectTitle */}
           <Heading size="lg" color="gray.800" mt={1}>
-            {objectTitle}
+            {stableTitle}
           </Heading>
         </Box>
-        {/* Выпадающий список объектов */}
+
+        {/* Список объектов */}
         <Button
           variant="ghost"
           justifyContent="space-between"
@@ -143,153 +189,87 @@ export default function ObjectCalendar() {
           {isListOpen ? 'Скрыть список объектов' : 'Открыть список объектов'}
           {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
         </Button>
-
         {isListOpen && <ObjectList />}
 
-        {/* Шапка календаря: Название месяца и пагинация по месяцам */}
-        <HStack justify="space-between">
-          <VStack align="flex-start" gap={0}>
-            <Text fontSize="2xl" fontWeight="bold" textTransform="capitalize">
-              {format(currentMonth, 'LLLL yyyy', { locale: ru })}
-            </Text>
-            <HStack gap={2} mt={2}>
-              <Button size="xs" variant="outline" onClick={selectAllDays}>
-                Весь месяц
-              </Button>
-              <Button size="xs" variant="outline" onClick={selectDaysWithoutShifts}>
-                Дни без смен
-              </Button>
-            </HStack>
-          </VStack>
-
-          <HStack>
-            <Button size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-              Пред.
-            </Button>
-            <Button size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-              След.
-            </Button>
-          </HStack>
-        </HStack>
+        {/* Шапка календаря */}
+        <CalendarHeader
+          // ✅ 6. Передаём stableTitle в хедер
+          objectTitle={stableTitle}
+          currentMonth={currentMonth}
+          year={year}
+          month={month}
+          calendarMode={calendarMode}
+          isListOpen={isListOpen}
+          onToggleList={() => setIsListOpen(!isListOpen)}
+          onDateChange={handleDateChange}
+          onModeChange={handleModeChange}
+          onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          onToday={() => setCurrentMonth(new Date())}
+          onSelectAllDays={selectAllDays}
+          onSelectEmptyDays={selectDaysWithoutShifts}
+        />
 
         {/* Сетка календаря */}
-        <SimpleGrid columns={7} gap={1}>
-          {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((d) => (
-            <Text key={d} textAlign="center" fontSize="sm" fontWeight="bold" color="gray.400">
-              {d}
-            </Text>
-          ))}
+        <CalendarGrid
+          calendarDays={calendarDays}
+          monthStart={monthStart}
+          shifts={shifts}
+          selectedDates={selectedDates}
+          isToday={(day) => isSameDay(day, new Date())}
+          calendarMode={calendarMode}
+          expandedCells={expandedCells}
+          onCellClick={handleDayCellClick}
+          onShiftClick={handleShiftClick}
+          onToggleExpand={handleToggleExpand}
+          objectsDictionary={objectsDictionary}
+        />
 
-          {calendarDays.map((day, idx) => {
-            const isSelected = selectedDates.some((d) => isSameDay(d, day))
-            const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
-            const isToday = isSameDay(day, new Date())
-
-            // Проверяем, принадлежит ли день текущему месяцу
-            const isCurrentMonth = isSameMonth(day, monthStart)
-
-            // Считаем общее количество людей во всех сменах этого дня
-            const totalWorkersInDay = dayShifts.reduce(
-              (sum, shift) => sum + (shift.totalWorkers || 0),
-              0
-            )
-            // День считается заполненным, только если есть смены И в них есть люди
-            const isDayPopulated = dayShifts.length > 0 && totalWorkersInDay > 0
-
-            return (
-              <Box
-                key={idx}
-                minH="110px"
-                border="1px solid"
-                borderColor={isToday ? 'blue.300' : 'gray.100'}
-                bg={isSelected ? 'blue.500' : 'transparent'}
-                color={isSelected ? 'white' : 'black'}
-                p={1}
-                // Меняем курсор в зависимости от месяца
-                cursor={isCurrentMonth ? 'pointer' : 'default'}
-                transition="0.1s"
-                // Отключаем эффект ховера для чужого месяца
-                _hover={isCurrentMonth ? { bg: isSelected ? 'blue.600' : 'gray.50' } : undefined}
-                onClick={() => {
-                  // 🛑 ДОБАВЛЕНО: Прерываем клик, если день из другого месяца
-                  if (!isCurrentMonth) return
-
-                  if (isDayPopulated) {
-                    // ИСПРАВЛЕНО: Берем id из первой смены текущего дня (или подставьте нужное поле id рабочего дня)
-                    const workdayId = dayShifts[0]?.objectWorkdayId || dayShifts[0]?.id
-                    setSelectedWorkday(workdayId)
-                    setOpenOneDayDialog(true)
-                  } else {
-                    // Если день пустой или там 0 людей — работает обычный выбор дат
-                    handleDateClick(day)
-                  }
-                }}
-                opacity={isCurrentMonth ? 1 : 0.3}
-              >
-                <Text fontWeight={isToday ? 'bold' : 'medium'} fontSize="sm">
-                  {format(day, 'd')}
-                </Text>
-
-                {/* Вывод назначенных смен в ячейке дня (только если есть люди) */}
-                {isDayPopulated && (
-                  <VStack align="stretch" gap={1} mt={1}>
-                    {dayShifts.map((shift) => {
-                      // ИСПРАВЛЕНО: Пропускаем рендер бейджа, если в этой смене 0 сотрудников
-                      if ((shift.totalWorkers || 0) === 0) return null
-
-                      return (
-                        <Badge
-                          key={shift.id}
-                          colorPalette={isSelected ? 'whiteAlpha' : 'orange'}
-                          fontSize="2xs"
-                          variant="solid"
-                          // Меняем курсор бейджа для чужого месяца
-                          cursor={isCurrentMonth ? 'pointer' : 'default'}
-                          onClick={(e) => {
-                            e.stopPropagation() // ИСПРАВЛЕНО: Предотвращает ложный клик по Box
-
-                            // Блокируем клик по бейджу, если месяц чужой
-                            if (isCurrentMonth) {
-                              handleShiftClick(e, shift)
-                            }
-                          }}
-                        >
-                          {`В смене: ${shift.totalWorkers}`}
-                        </Badge>
-                      )
-                    })}
-                  </VStack>
-                )}
-              </Box>
-            )
-          })}
-        </SimpleGrid>
-
-        {/* Нижняя всплывающая синяя панель действий */}
-        {selectedDates.length > 0 && (
-          <HStack justify="space-between" p={4} bg="blue.900" color="white" borderRadius="lg">
-            <VStack align="flex-start" gap={0}>
-              <Text fontSize="xs" opacity={0.8}>
-                Выбрано дней: {selectedDates.length}
-              </Text>
-              <Text fontWeight="bold" fontSize="sm" noOfLines={1}>
-                {selectedDates
-                  .sort((a, b) => a - b)
-                  .map((d) => format(d, 'dd.MM'))
-                  .join(', ')}
-              </Text>
-            </VStack>
-            <HStack>
-              <Button colorPalette="blue" size="md" onClick={handleOpenCreateDialog}>
-                Назначить смену
-              </Button>
-              <Button variant="whiteAlpha" onClick={() => setSelectedDates([])}>
-                Сброс
-              </Button>
-            </HStack>
-          </HStack>
-        )}
+        {/* Нижняя панель действий */}
+        <CalendarActionBar
+          selectedDates={selectedDates}
+          onAssign={handleOpenCreateDialog}
+          onClear={() => setSelectedDates([])}
+        />
       </VStack>
     </>
+  )
+}
+
+// ─── Вспомогательные компоненты лоадера/ошибки ──────────────
+function CalendarLoader({ title }) {
+  return (
+    <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+      <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
+        <Text fontSize="sm" fontWeight="bold" color="blue.500" textTransform="uppercase">
+          Календарь расписания
+        </Text>
+        {/* ✅ 7. Стабильный заголовок в лоадере */}
+        <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
+          {title}
+        </Heading>
+      </Box>
+      <Box h="calc(75vh - 200px)" display="flex" alignItems="center" justifyContent="center">
+        <Spinner size="lg" color="blue.500" thickness="3px" />
+      </Box>
+    </VStack>
+  )
+}
+
+function CalendarError({ title }) {
+  return (
+    <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+      <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
+        <Text fontSize="sm" fontWeight="bold" color="blue.500" textTransform="uppercase">
+          Календарь расписания
+        </Text>
+        <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
+          {title}
+        </Heading>
+      </Box>
+      <Flex h="200px" align="center" justify="center" color="red.500">
+        <Text>Ошибка загрузки данных с сервера</Text>
+      </Flex>
+    </VStack>
   )
 }

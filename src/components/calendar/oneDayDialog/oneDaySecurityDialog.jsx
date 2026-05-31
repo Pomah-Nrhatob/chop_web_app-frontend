@@ -12,12 +12,9 @@ import {
   Text,
   VStack,
   HStack,
-  Badge,
-  Card,
-  Grid,
-  GridItem,
-  IconButton,
-  Alert,
+  Separator,
+  Spinner,
+  Box,
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -129,7 +126,7 @@ export default function OneDaySecurityDialog({
   const foundObject = objects.find((obj) => obj.id === oneSecurityWorkdayInfo?.securityObjectId)
 
   const onSubmit = () => {
-    console.log('submit')
+    setOpen(false)
   }
 
   console.log(oneSecurityWorkdayInfo)
@@ -150,60 +147,91 @@ export default function OneDaySecurityDialog({
         <Dialog.Backdrop />
         <Dialog.Positioner
           display="flex"
-          alignItems={{ base: 'flex-start', md: 'center' }}
+          alignItems={{ base: 'flex-end', md: 'center' }} // На мобилках выезжает снизу, на десктопе по центру
           justifyContent="center"
-          pt={{ base: 2, md: 0 }}
-          px={{ base: 2, md: 0 }}
+          p={{ base: 0, md: 4 }}
         >
           <Dialog.Content
             as="form"
             onSubmit={handleSubmit(onSubmit)}
-            w={{ base: 'calc(100vw - 16px)', md: '600px' }}
+            w={{ base: '100vw', md: '600px' }}
             maxW="600px"
-            maxH={{ base: 'calc(100dvh - 72px)', md: '90dvh' }}
+            maxH={{ base: '85dvh', md: '90dvh' }} // Чтобы не упиралось в экран на мобилках
+            borderTopRadius={{ base: 'l3', md: 'md' }} // Скругление сверху на мобильных
+            borderBottomRadius={{ base: 0, md: 'md' }}
             overflow="hidden"
             display="flex"
             flexDirection="column"
+            bg="bg.panel"
+            boxShadow="lg"
           >
-            <Dialog.Header flex="0 0 auto">
-              <Dialog.Title>Информация о рабочем дне</Dialog.Title>
+            {/* ХЕДЕР */}
+            <Dialog.Header flex="0 0 auto" px={6} py={4} position="relative">
+              <Dialog.Title fontSize="xl" fontWeight="semibold">
+                Информация о рабочем дне
+              </Dialog.Title>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" position="absolute" top={3} right={3} />
+                <CloseButton size="sm" position="absolute" top={4} right={4} />
               </Dialog.CloseTrigger>
             </Dialog.Header>
 
-            <Dialog.Body flex="1 1 auto" overflowY="auto" overscrollBehavior="contain">
+            <Separator />
+
+            {/* ТЕЛО МОДАЛКИ */}
+            <Dialog.Body
+              flex="1 1 auto"
+              overflowY="auto"
+              overscrollBehavior="contain"
+              px={6}
+              py={5}
+            >
+              {/* СОСТОЯНИЕ ЗАГРУЗКИ */}
               {isLoading || isFetching || loadingObjects || loadingSecurities ? (
-                <VStack justify="center" py={8}>
-                  <Text>Загрузка данных...</Text>
+                <VStack justify="center" align="center" h="200px" gap={3}>
+                  <Spinner size="xl" color="blue.500" strokeWidth={3} />
+                  <Text color="fg.muted" fontSize="sm">
+                    Загрузка данных...
+                  </Text>
                 </VStack>
               ) : oneSecurityWorkdayInfo ? (
-                <VStack align="stretch" spacing={4}>
-                  <Card.Root variant="outline">
-                    <Card.Header pb={2}>
-                      <HStack justify="space-between">
-                        <Text fontSize="lg" fontWeight="bold">
-                          {formatDate(oneSecurityWorkdayInfo.timestamp)}
-                        </Text>
-                      </HStack>
-                    </Card.Header>
-                  </Card.Root>
+                <VStack align="stretch" gap={5}>
+                  {/* ПЛАШКА С ДАТОЙ */}
+                  <Box
+                    bg="bg.muted"
+                    p={4}
+                    borderRadius="md"
+                    borderWidth="1px"
+                    borderColor="border.subtle"
+                  >
+                    <HStack justify="space-between">
+                      <Text
+                        fontSize="xs"
+                        fontWeight="bold"
+                        color="fg.muted"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Дата смены
+                      </Text>
+                      <Text fontSize="md" fontWeight="semibold" color="fg.main">
+                        {formatDate(oneSecurityWorkdayInfo.timestamp)}
+                      </Text>
+                    </HStack>
+                  </Box>
 
-                  <VStack align="stretch" spacing={3}>
+                  {/* КОНТЕНТ ФОРМЫ */}
+                  <Box>
                     {(() => {
-                      // Выносим расчет переменных в анонимную функцию, которая сразу выполняется
                       const isDeleted = deletedSet.has(oneSecurityWorkdayInfo.id)
                       const isUpdateWorkday = updatedMap.get(oneSecurityWorkdayInfo.id)
 
                       return (
                         <SecurityDayInfoBySecurities
-                          // ИСПРАВЛЕНО: Ключом должен быть ID записи смены (id), а не ID охранника
                           loadingObjects={loadingObjects}
                           objects={objects}
                           control={control}
                           foundObject={foundObject}
                           key={oneSecurityWorkdayInfo.id}
-                          // Если есть обновления в форме, подмешиваем их в объект смены
                           worker={
                             isUpdateWorkday
                               ? { ...oneSecurityWorkdayInfo, ...isUpdateWorkday }
@@ -218,45 +246,72 @@ export default function OneDaySecurityDialog({
                         />
                       )
                     })()}
-                  </VStack>
+                  </Box>
                 </VStack>
               ) : (
-                <VStack justify="center" py={8}>
-                  <Text color="gray.500">Данные отсутствуют</Text>
+                /* ПУСТОЕ СОСТОЯНИЕ */
+                <VStack justify="center" h="200px" gap={2}>
+                  <Text color="fg.muted" fontSize="md" fontWeight="medium">
+                    Данные отсутствуют
+                  </Text>
                 </VStack>
               )}
             </Dialog.Body>
 
-            <Dialog.Footer flex="0 0 auto">
-              <HStack justifyContent="flex-end" w="100%" gap={2}>
+            <Separator />
+
+            {/* ФУТЕР */}
+            <Dialog.Footer flex="0 0 auto" px={6} py={4} bg="bg.muted/30">
+              <HStack
+                justifyContent="flex-end"
+                w="100%"
+                gap={3}
+                flexDirection={{ base: 'column-reverse', sm: 'row' }} // Кнопки в стек на мобильных
+              >
+                {/* Режим просмотра */}
                 {!isEditing && (
-                  <Button variant="outline" onClick={() => setOpen(false)}>
-                    Закрыть
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setOpen(false)}
+                      w={{ base: '100%', sm: 'auto' }}
+                    >
+                      Закрыть
+                    </Button>
+                    <Button
+                      colorPalette="blue"
+                      onClick={() => setIsEditing(true)}
+                      w={{ base: '100%', sm: 'auto' }}
+                    >
+                      Редактировать
+                    </Button>
+                  </>
                 )}
 
+                {/* Режим редактирования */}
                 {isEditing && (
-                  <Button
-                    disabled={isProcessing}
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false)
-                      resetForm()
-                    }}
-                  >
-                    Отменить
-                  </Button>
-                )}
-
-                {isEditing && (
-                  <Button type="submit" disabled={isProcessing} loading={isProcessing}>
-                    Сохранить
-                  </Button>
-                )}
-                {!isEditing && (
-                  <Button htmlType="button" onClick={() => setIsEditing(true)}>
-                    Редактировать
-                  </Button>
+                  <>
+                    <Button
+                      disabled={isProcessing}
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false)
+                        resetForm()
+                      }}
+                      w={{ base: '100%', sm: 'auto' }}
+                    >
+                      Отменить
+                    </Button>
+                    <Button
+                      type="submit"
+                      colorPalette="blue"
+                      disabled={isProcessing}
+                      loading={isProcessing}
+                      w={{ base: '100%', sm: 'auto' }}
+                    >
+                      Сохранить
+                    </Button>
+                  </>
                 )}
               </HStack>
             </Dialog.Footer>
