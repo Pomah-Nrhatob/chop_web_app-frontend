@@ -74,7 +74,7 @@ export const authOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false, // ✅ HTTP!
+        secure: true,
         domain: 'uchop.ru', // ✅ Раскомментируйте для IP!
       },
     },
@@ -85,7 +85,7 @@ export const authOptions = {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
-      secure: false,
+      secure: true,
       domain: 'uchop.ru',
     },
   },
