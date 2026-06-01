@@ -1,8 +1,16 @@
-import { Flex, Image, Text } from '@chakra-ui/react'
+import { Flex, Image, Text, useBreakpointValue } from '@chakra-ui/react'
 import Link from 'next/link'
 import logo from '../../../../public/images/main-icon.png'
+import mobileLogo from '../../../../public/images/main-icon_mobile.png'
 
 export default function HeaderContainer({ children }) {
+  const logoSrc = useBreakpointValue({
+    base: mobileLogo.src,
+    md: logo.src,
+  })
+
+  const srcToUse = logoSrc || mobileLogo.src
+
   return (
     <Flex
       as="header"
@@ -13,11 +21,14 @@ export default function HeaderContainer({ children }) {
       justify="space-between"
       alignItems="center"
     >
-      <Text fontSize={12} fontWeight="bold">
-        <Link href="/">
-          <Image src={logo.src} alt="CRM Logo" width="150px" objectFit="contain" />
-        </Link>
-      </Text>
+      <Link href="/">
+        <Image
+          src={srcToUse}
+          alt="CRM Logo"
+          width={{ base: '45px', md: '150px' }}
+          objectFit="contain"
+        />
+      </Link>
       {children}
     </Flex>
   )
