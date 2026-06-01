@@ -1,5 +1,6 @@
-import { Flex, Text } from '@chakra-ui/react'
+import { Flex, Image, Text } from '@chakra-ui/react'
 import Link from 'next/link'
+import logo from '../../../../public/images/main-icon.png'
 
 export default function HeaderContainer({ children }) {
   return (
@@ -13,7 +14,9 @@ export default function HeaderContainer({ children }) {
       alignItems="center"
     >
       <Text fontSize={12} fontWeight="bold">
-        <Link href="/">CHOP CRM</Link>
+        <Link href="/">
+          <Image src={logo.src} alt="CRM Logo" width="150px" objectFit="contain" />
+        </Link>
       </Text>
       {children}
     </Flex>

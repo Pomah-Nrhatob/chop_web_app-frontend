@@ -14,7 +14,8 @@ export const viewport = {
 }
 
 export const metadata = {
-  title: 'Chop-CRM | Управление бизнесом',
+  title: 'Uchop | Управление бизнесом',
+  icons: '/favicon.png',
   description: 'Управление бизнесом в твоем кармане',
 }
 
