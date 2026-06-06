@@ -117,13 +117,11 @@ export default function OneDaySecurityDialog({
       return 'Неизвестная дата'
     }
   }
+  const { data: securities = [], isLoading: loadingSecurities } = useGetDictionarySecurities()
+  const { data: objects = [], isLoading: loadingObjects } = useGetDictionaryObjects()
 
-  const { data: objects, isLoading: loadingObjects } = useGetDictionaryObjects()
-  const { data: securities, isLoading: loadingSecurities } = useGetDictionarySecurities()
-
-  const foundSecurity = securities.find((sec) => sec.id === oneSecurityWorkdayInfo?.securityId)
-
-  const foundObject = objects.find((obj) => obj.id === oneSecurityWorkdayInfo?.securityObjectId)
+  const foundSecurity = securities?.find((sec) => sec.id === oneSecurityWorkdayInfo?.securityId)
+  const foundObject = objects?.find((obj) => obj.id === oneSecurityWorkdayInfo?.securityObjectId)
 
   const onSubmit = () => {
     setOpen(false)

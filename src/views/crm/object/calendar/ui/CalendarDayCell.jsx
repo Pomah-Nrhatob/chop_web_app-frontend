@@ -1,4 +1,3 @@
-// src/views/crm/object/calendar/ui/CalendarDayCell.jsx
 'use client'
 
 import React, { memo } from 'react'
@@ -17,14 +16,12 @@ const CalendarDayCell = ({
   onCellClick,
   onShiftClick,
   onToggleExpand,
-  objectsDictionary,
 }) => {
   const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
   const isDayPopulated = dayShifts.length > 0
   const dayKey = format(day, 'yyyy-MM-dd')
   const isCellExpanded = !!expandedCells[dayKey]
 
-  // ✅ Агрегируем данные для отображения (как в оригинале)
   const aggregated = dayShifts.reduce(
     (acc, shift) => ({
       totalWorkers: acc.totalWorkers + (shift.totalWorkers || 0),
@@ -39,14 +36,11 @@ const CalendarDayCell = ({
     aggregated.totalWorkers > 0 ? (aggregated.startedCount / aggregated.totalWorkers) * 100 : 0
   const colorScheme = progress === 100 ? 'green' : progress >= 50 ? 'yellow' : 'orange'
 
-  // Стили ячейки
   const borderColor =
     calendarMode === 'edit' && isSelected ? 'blue.500' : isToday ? 'blue.300' : 'gray.100'
   const borderWidth = calendarMode === 'edit' && isSelected ? '2px' : '1px'
 
-  // ✅ Функция рендера контента ячейки (как renderCellContent в оригинале)
   const renderCellContent = () => {
-    // Пустая ячейка
     if (isEmpty) {
       return (
         <VStack gap={1} h="100%" justify="center">
@@ -58,10 +52,8 @@ const CalendarDayCell = ({
       )
     }
 
-    // Заполненная ячейка
     return (
       <VStack gap={1} h="100%" justify="center">
-        {/* Строка 1: иконка старта + бейдж начатых */}
         <HStack gap={1}>
           <Icon as={MdPlayCircleFilled} boxSize={4} color={`${colorScheme}.600`} />
           <Badge
@@ -84,7 +76,6 @@ const CalendarDayCell = ({
           </Badge>
         </HStack>
 
-        {/* Строка 2: иконка завершения + бейдж завершённых */}
         <HStack gap={1}>
           <Icon
             as={MdCheckCircle}
@@ -103,7 +94,6 @@ const CalendarDayCell = ({
           </Badge>
         </HStack>
 
-        {/* Если смен > 1 — показываем счётчик */}
         {dayShifts.length > 1 && (
           <Text fontSize="2xs" color={isSelected ? 'whiteAlpha.700' : 'gray.400'}>
             +{dayShifts.length - 1} ещё

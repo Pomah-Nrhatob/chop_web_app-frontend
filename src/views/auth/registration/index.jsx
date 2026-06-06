@@ -11,7 +11,6 @@ export default function RegistrationPage() {
           <Text color="fg.muted">Создайте аккаунт для доступа к системе</Text>
         </Box>
 
-        {/* Наша умная форма из features */}
         <RegisterForm />
 
         <Text fontSize="sm" textAlign="center" color="fg.muted">

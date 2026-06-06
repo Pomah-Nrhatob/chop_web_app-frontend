@@ -28,10 +28,8 @@ export default function CalendarHeader({
         borderBottom="1px solid"
         borderColor="gray.100"
       >
-        {/* 🔹 Левая часть: Выбор месяца/года + быстрые действия */}
         <VStack align="flex-start" gap={2} w={{ base: '100%', md: 'auto' }}>
           <HStack gap={2} wrap="wrap">
-            {/* ✅ Выбор месяца — нативный select со стилями Chakra */}
             <Box position="relative">
               <Box
                 as="select"
@@ -65,7 +63,7 @@ export default function CalendarHeader({
                 <option value="11">Ноябрь</option>
                 <option value="12">Декабрь</option>
               </Box>
-              {/* Кастомная стрелка внутри селекта */}
+
               <Box
                 position="absolute"
                 right={2}
@@ -78,7 +76,6 @@ export default function CalendarHeader({
               </Box>
             </Box>
 
-            {/* ✅ Выбор года — нативный select со стилями Chakra */}
             <Box position="relative">
               <Box
                 as="select"
@@ -109,7 +106,7 @@ export default function CalendarHeader({
                   )
                 })}
               </Box>
-              {/* Кастомная стрелка внутри селекта */}
+
               <Box
                 position="absolute"
                 right={2}
@@ -121,12 +118,9 @@ export default function CalendarHeader({
                 <LuChevronDown size={16} />
               </Box>
             </Box>
-
-            {/* Кнопка «Сегодня» */}
           </HStack>
         </VStack>
 
-        {/* Правая часть: Режим + навигация */}
         <Flex
           align="center"
           gap={2}
@@ -134,7 +128,6 @@ export default function CalendarHeader({
           justifyContent={{ base: 'flex-start', md: 'flex-end' }}
           w={{ base: '100%', md: 'auto' }}
         >
-          {/* Переключатель режима */}
           <VStack align="flex-start" gap={0} w={{ base: '100%', md: 'auto' }}>
             <HStack gap={2} align="center" wrap="wrap">
               <Text fontSize="sm" fontWeight="medium" color="gray.700">
@@ -190,7 +183,6 @@ export default function CalendarHeader({
 
           <Box display={{ base: 'none', md: 'block' }} w="1px" h="24px" bg="gray.200" />
 
-          {/* Навигация */}
           <HStack
             gap={0}
             borderRadius="md"
@@ -231,7 +223,6 @@ export default function CalendarHeader({
         </Flex>
       </Flex>
 
-      {/* Мобильные действия */}
       {calendarMode === 'edit' && (
         <HStack gap={2} wrap="wrap" pt={2} justifyContent="flex-start">
           <Button size="xs" variant="outline" onClick={onSelectAllDays} flex={1}>
