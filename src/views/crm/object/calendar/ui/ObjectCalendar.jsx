@@ -19,11 +19,9 @@ import {
 import { LuChevronDown, LuChevronUp } from 'react-icons/lu'
 import { useParams } from 'next/navigation'
 
-// Хуки
 import { useGetCalendarObjectWorkdays } from '@/features/calendar-object/api/use-get-calendar-workdays'
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
 
-// Компоненты
 import ObjectList from '../../ui/ObjectList'
 import EmptyDayDialogObjects from '@/components/calendar/emptyDayDialog/EmptyDialogObjects'
 import OneDayDialog from '@/components/calendar/oneDayDialog/OneDayDialog'
@@ -32,7 +30,6 @@ import CalendarGrid from './CalendarGrid'
 import CalendarActionBar from './CalendarActionBar'
 
 export default function ObjectCalendar() {
-  // ─── STATE ─────────────────────────────────────────────────
   const [calendarMode, setCalendarMode] = useState('view')
   const [expandedCells, setExpandedCells] = useState({})
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -43,14 +40,11 @@ export default function ObjectCalendar() {
   const [emptyDayInfo, setEmptyDayInfo] = useState({})
   const [selectedWorkday, setSelectedWorkday] = useState(null)
 
-  // ─── PARAMS & DATA ─────────────────────────────────────────
   const params = useParams()
   const securityObjectId = Number(params.id)
 
-  // ✅ 1. Добавь isLoading к хуку словаря
   const { data: objectsDictionary = [], isLoading: isDictLoading } = useGetDictionaryObjects()
 
-  // ✅ 2. Создай стабильный заголовок
   const stableTitle = useMemo(() => {
     if (isDictLoading || !objectsDictionary?.length) {
       return `Объект #${securityObjectId}`
@@ -58,10 +52,6 @@ export default function ObjectCalendar() {
     const currentObject = objectsDictionary.find((el) => el.id === securityObjectId)
     return currentObject ? currentObject.title : `Объект #${securityObjectId}`
   }, [isDictLoading, objectsDictionary, securityObjectId])
-
-  // ✅ 3. УДАЛИ objectTitle — он больше не нужен (источник гидратационных ошибок)
-  // const currentObject = objectsDictionary.find((el) => el.id === securityObjectId)
-  // const objectTitle = currentObject ? currentObject.title : `Объект #${securityObjectId}`
 
   const year = getYear(currentMonth)
   const month = getMonth(currentMonth) + 1
@@ -82,7 +72,6 @@ export default function ObjectCalendar() {
     }))
   }, [serverShifts])
 
-  // ─── CALENDAR GENERATION ───────────────────────────────────
   const monthStart = startOfMonth(currentMonth)
   const calendarDays = eachDayOfInterval({
     start: startOfWeek(monthStart, { weekStartsOn: 1 }),
@@ -90,7 +79,6 @@ export default function ObjectCalendar() {
   })
   const currentMonthDays = calendarDays.filter((day) => isSameMonth(day, monthStart))
 
-  // ─── HANDLERS ──────────────────────────────────────────────
   const handleDateClick = (day) => {
     setSelectedDates((prev) =>
       prev.some((d) => isSameDay(d, day)) ? prev.filter((d) => !isSameDay(d, day)) : [...prev, day]
@@ -99,13 +87,20 @@ export default function ObjectCalendar() {
 
   const handleDayCellClick = (day) => {
     if (!isSameMonth(day, monthStart)) return
+
     const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
-    if (calendarMode === 'view' && dayShifts[0]?.id) {
-      setSelectedWorkday(dayShifts[0].objectWorkdayId || dayShifts[0].id)
-      setOpenOneDayDialog(true)
-    } else {
-      handleDateClick(day)
+
+    const totalWorkersInDay = dayShifts.reduce((sum, s) => sum + (s.totalWorkers || 0), 0)
+
+    if (calendarMode === 'view') {
+      if (dayShifts.length > 0 && totalWorkersInDay > 0 && dayShifts[0]?.id) {
+        setSelectedWorkday(dayShifts[0].objectWorkdayId || dayShifts[0].id)
+        setOpenOneDayDialog(true)
+      }
+      return
     }
+
+    handleDateClick(day)
   }
 
   const handleShiftClick = (e, shift) => {
@@ -138,14 +133,11 @@ export default function ObjectCalendar() {
     setOpenEmptyDayDialog(true)
   }
 
-  // ─── LOADING / ERROR ───────────────────────────────────────
-  // ✅ 4. Ждём загрузки И словаря, И смен
   if (isDictLoading || isLoading || isFetching) {
     return <CalendarLoader title={`Объект #${securityObjectId}`} />
   }
   if (isError) return <CalendarError title={stableTitle} />
 
-  // ─── RENDER ────────────────────────────────────────────────
   return (
     <>
       <OneDayDialog
@@ -163,7 +155,6 @@ export default function ObjectCalendar() {
       />
 
       <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-        {/* Заголовок объекта */}
         <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
           <Text
             fontSize="sm"
@@ -174,13 +165,11 @@ export default function ObjectCalendar() {
           >
             Календарь расписания
           </Text>
-          {/* ✅ 5. Используем stableTitle вместо objectTitle */}
           <Heading size="lg" color="gray.800" mt={1}>
             {stableTitle}
           </Heading>
         </Box>
 
-        {/* Список объектов */}
         <Button
           variant="ghost"
           justifyContent="space-between"
@@ -191,9 +180,7 @@ export default function ObjectCalendar() {
         </Button>
         {isListOpen && <ObjectList />}
 
-        {/* Шапка календаря */}
         <CalendarHeader
-          // ✅ 6. Передаём stableTitle в хедер
           objectTitle={stableTitle}
           currentMonth={currentMonth}
           year={year}
@@ -210,7 +197,6 @@ export default function ObjectCalendar() {
           onSelectEmptyDays={selectDaysWithoutShifts}
         />
 
-        {/* Сетка календаря */}
         <CalendarGrid
           calendarDays={calendarDays}
           monthStart={monthStart}
@@ -225,7 +211,6 @@ export default function ObjectCalendar() {
           objectsDictionary={objectsDictionary}
         />
 
-        {/* Нижняя панель действий */}
         <CalendarActionBar
           selectedDates={selectedDates}
           onAssign={handleOpenCreateDialog}
@@ -236,7 +221,6 @@ export default function ObjectCalendar() {
   )
 }
 
-// ─── Вспомогательные компоненты лоадера/ошибки ──────────────
 function CalendarLoader({ title }) {
   return (
     <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
@@ -244,7 +228,6 @@ function CalendarLoader({ title }) {
         <Text fontSize="sm" fontWeight="bold" color="blue.500" textTransform="uppercase">
           Календарь расписания
         </Text>
-        {/* ✅ 7. Стабильный заголовок в лоадере */}
         <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
           {title}
         </Heading>

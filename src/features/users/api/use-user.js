@@ -43,22 +43,27 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
   const mutation = useMutation({
     mutationFn: (data) => userApi.changeActiveCompany(data),
 
+    //
     onSuccess: async () => {
       await refreshUser()
 
       resetDictionaryCache([DICTIONARY_OBJECTS_KEY, DICTIONARY_SECURITIES_KEY])
 
       queryClient.invalidateQueries({
-        queryKey: ['calendar-allObjects'],
+        predicate: (query) => {
+          const key = query.queryKey[0]
+          return (
+            key === 'calendar-security-workdays' ||
+            key === 'calendar-object-workdays' ||
+            key === 'calendar-allObjects' ||
+            key === 'calendar-oneDay' ||
+            key === 'dictionary-securities' ||
+            key === 'dictionary-objects' ||
+            key === 'objects' ||
+            key === 'securities'
+          )
+        },
       })
-
-      queryClient.invalidateQueries({
-        queryKey: ['calendar-oneDay'],
-      })
-
-      queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
-      queryClient.invalidateQueries({ queryKey: ['objects'] })
-      queryClient.invalidateQueries({ queryKey: ['securities'] })
 
       additionalOnSuccess?.()
 

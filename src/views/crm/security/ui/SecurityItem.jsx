@@ -13,7 +13,6 @@ export const SecurityItem = memo(
       <DataTableRow
         icon={LuUser}
         title={`${surname} ${name} ${patronymic}`}
-        // ✅ Используем calendarHref вместо goToCalendar → сработает <Link> и loading bar
         calendarHref={`/bc/security/calendar/${id}`}
         onDetails={() => onDetails(id)}
         onEdit={() => onEdit(security)}

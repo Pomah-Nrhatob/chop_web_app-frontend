@@ -33,7 +33,6 @@ const ShiftCard = ({ shift, isSelected, isCurrentMonth, onClick, objectsDictiona
       onClick={onClick}
     >
       <VStack align="stretch" gap={1}>
-        {/* Название объекта */}
         <Text
           fontSize="2xs"
           fontWeight="medium"
@@ -44,7 +43,6 @@ const ShiftCard = ({ shift, isSelected, isCurrentMonth, onClick, objectsDictiona
           {objectTitle.length > 20 ? objectTitle.slice(0, 20) + '…' : objectTitle}
         </Text>
 
-        {/* Строка 1: старт + бейдж */}
         <HStack justify="space-between">
           <HStack gap={1}>
             <Icon as={MdPlayCircleFilled} boxSize={4} color={`${shiftColor}.600`} />
@@ -76,7 +74,6 @@ const ShiftCard = ({ shift, isSelected, isCurrentMonth, onClick, objectsDictiona
           </Text>
         </HStack>
 
-        {/* Строка 2: завершение + бейдж */}
         <HStack gap={1} justify="flex-start">
           <Icon as={MdCheckCircle} boxSize={4} color={isShiftFinished ? 'green.600' : 'gray.400'} />
           <Badge
@@ -95,7 +92,6 @@ const ShiftCard = ({ shift, isSelected, isCurrentMonth, onClick, objectsDictiona
   )
 }
 
-// ✅ Custom comparison: перерисовываем только если изменились критичные пропсы
 const arePropsEqual = (prevProps, nextProps) => {
   return (
     prevProps.shift?.id === nextProps.shift?.id &&

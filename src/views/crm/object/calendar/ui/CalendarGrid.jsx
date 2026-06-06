@@ -18,14 +18,12 @@ export default function CalendarGrid({
 }) {
   return (
     <SimpleGrid columns={7} gap={1}>
-      {/* Заголовки дней недели */}
       {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((d) => (
         <Text key={d} textAlign="center" fontSize="sm" fontWeight="bold" color="gray.400">
           {d}
         </Text>
       ))}
 
-      {/* Ячейки дней */}
       {calendarDays.map((day, idx) => {
         const isSelected = selectedDates.some((d) => d.toDateString() === day.toDateString())
         const isCurrentMonth =
