@@ -75,7 +75,8 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        // domain: 'uchop.ru', // ✅ Раскомментируйте для IP!
+
+        domain: 'uchop.ru', // ✅ Раскомментируйте для IP!
       },
     },
   },
@@ -86,7 +87,8 @@ export const authOptions = {
       sameSite: 'lax',
       path: '/',
       secure: true,
-      // domain: 'uchop.ru',
+
+      domain: 'uchop.ru',
     },
   },
   pages: {

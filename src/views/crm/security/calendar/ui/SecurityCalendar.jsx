@@ -29,6 +29,7 @@ import OneDaySecurityDialog from '@/components/calendar/oneDayDialog/oneDaySecur
 import SecurityCalendarHeader from './SecurityCalendarHeader'
 import SecurityCalendarGrid from './SecurityCalendarGrid'
 import SecurityCalendarActionBar from './SecurityCalendarActionBar'
+import SecurityReportGenerator from '@/widgets/report-generator/ui/SecurityReportGenerator'
 
 export default function SecurityCalendar() {
   // ─── STATE ─────────────────────────────────────────────────
@@ -222,22 +223,27 @@ export default function SecurityCalendar() {
           >
             Календарь расписания
           </Text>
-          <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
-            {currentSecurity?.name}
-          </Heading>
-          <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
-            {currentSecurity?.surname}
-          </Heading>
+          <Flex alignItems="center" justifyContent="space-between">
+            <Flex gap={2}>
+              <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
+                {currentSecurity?.name}
+              </Heading>
+              <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
+                {currentSecurity?.surname}
+              </Heading>
+            </Flex>
+            <SecurityReportGenerator itemId={securityId} year={year} month={month} />
+          </Flex>
         </Box>
         {/* Список охранников */}
-        <Button
+        {/* <Button
           variant="ghost"
           justifyContent="space-between"
           onClick={() => setIsListOpen(!isListOpen)}
         >
           {isListOpen ? 'Скрыть список охранников' : 'Открыть список охранников'}
           {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
-        </Button>
+        </Button> */}
         {isListOpen && <SecurityList />}
 
         <SecurityCalendarHeader

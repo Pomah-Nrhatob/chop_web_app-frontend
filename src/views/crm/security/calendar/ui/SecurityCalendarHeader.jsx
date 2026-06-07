@@ -40,7 +40,7 @@ export default function SecurityCalendarHeader({
 
   return (
     <>
-      <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
+      {/* <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
         <Text
           fontSize="sm"
           fontWeight="bold"
@@ -53,7 +53,7 @@ export default function SecurityCalendarHeader({
         <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
           {currentSecurity?.name} {currentSecurity?.surname}
         </Heading>
-      </Box>
+      </Box> */}
       <Button
         variant="ghost"
         justifyContent="space-between"

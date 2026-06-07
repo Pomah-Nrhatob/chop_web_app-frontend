@@ -28,6 +28,7 @@ import OneDayDialog from '@/components/calendar/oneDayDialog/OneDayDialog'
 import CalendarHeader from './CalendarHeader'
 import CalendarGrid from './CalendarGrid'
 import CalendarActionBar from './CalendarActionBar'
+import ObjectReportGenerator from '@/widgets/report-generator/ui/ObjectReportGenerator'
 
 export default function ObjectCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -165,9 +166,16 @@ export default function ObjectCalendar() {
           >
             Календарь расписания
           </Text>
-          <Heading size="lg" color="gray.800" mt={1}>
-            {stableTitle}
-          </Heading>
+          <Flex alignItems="center" justifyContent="space-between">
+            <Heading size="lg" color="gray.800" mt={1}>
+              {stableTitle}
+            </Heading>
+            <ObjectReportGenerator
+              itemId={securityObjectId || null}
+              year={year || null}
+              month={month || null}
+            />
+          </Flex>
         </Box>
 
         <Button
