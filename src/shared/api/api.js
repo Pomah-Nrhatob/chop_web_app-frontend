@@ -170,6 +170,10 @@ const makeAuthenticatedRequest = async (
 
   try {
     const response = await baseClient(config)
+    if (options.responseType === 'blob') {
+      return response
+    }
+
     return response.data
   } catch (error) {
     if (error.response?.data) {

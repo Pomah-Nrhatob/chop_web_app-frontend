@@ -10,6 +10,7 @@ export default function SelectSecurity({
   placeholder = 'Выберите охранников',
   title = 'Выбор охранников',
   inputOnTop = false,
+  isDisabled = false,
 }) {
   const [searchValue, setSearchValue] = useState('')
   const { data: securities = [], isLoading } = useGetDictionarySecurities()
@@ -89,13 +90,14 @@ export default function SelectSecurity({
           onInputValueChange={(details) => setSearchValue(details.inputValue)}
           openOnClick
           invalid={!!error}
+          disabled={isDisabled}
         >
           <Combobox.Control>
             <Combobox.Input
               placeholder={placeholder}
               // 👇 Для single-select: readOnly, чтобы нельзя было вводить текст вручную
               // (выбор только из выпадающего списка, как в классическом <select>)
-              readOnly={!multiple}
+              // readOnly={!multiple}
             />
             <Combobox.IndicatorGroup>
               <Combobox.Trigger />

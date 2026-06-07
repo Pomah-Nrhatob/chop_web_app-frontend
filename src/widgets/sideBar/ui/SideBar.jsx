@@ -72,7 +72,7 @@ export function SidebarNav({ onToggle, collapsedWidth = COLLAPSED_WIDTH }) {
       }
       position="fixed"
       top={`calc(${HEADER_HEIGHT} + 16px)`}
-      left={isMobile ? '-8px' : desktopCollapsed ? '8px' : `calc(${SIDEBAR_WIDTH} - 20px)`}
+      left={isMobile ? '-4px' : desktopCollapsed ? '8px' : `calc(${SIDEBAR_WIDTH} - 20px)`}
       zIndex={1200}
       size={isMobile ? 'sx' : 'sm'}
       borderRadius="full"

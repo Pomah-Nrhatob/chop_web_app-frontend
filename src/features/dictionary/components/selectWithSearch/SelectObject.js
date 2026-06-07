@@ -45,12 +45,12 @@ export default function SelectObject({ value, onChange, error, isDisabled }) {
         <Combobox.Label>Выбор объекта</Combobox.Label>
         <Combobox.Control>
           <Combobox.Input placeholder="Выберите объект" />
-          <Combobox.IndicatorGroup>
+          <Combobox.IndicatorGroup gap="0.5" alignItems="center">
             {value && !isDisabled && (
               <CloseButton
                 size="sm"
                 onClick={handleClear}
-                position="absolute"
+                // position="absolute"
                 right="10px"
                 top="50%"
                 transform="translateY(-50%)"
