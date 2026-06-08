@@ -22,7 +22,7 @@ export const useRegister = () => {
     onError: (err) => {
       toaster.create({
         title: 'Ошибка',
-        description: err.response?.data?.message,
+        description: err.response?.data?.message || err.message || 'Ошибка регистрации',
         type: 'error',
       })
     },

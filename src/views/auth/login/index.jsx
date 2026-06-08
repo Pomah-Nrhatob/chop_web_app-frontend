@@ -19,6 +19,12 @@ export default function LoginPage() {
             Зарегистрироваться
           </Link>
         </Text>
+        <Text fontSize="sm" textAlign="center" color="fg.muted">
+          Не подтвердили почту?{' '}
+          <Link href="/request-verify-email" style={{ color: 'blue' }}>
+            Отправить письмо подтверждения повторно
+          </Link>
+        </Text>
       </VStack>
     </Container>
   )

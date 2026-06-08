@@ -60,7 +60,8 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
             key === 'dictionary-securities' ||
             key === 'dictionary-objects' ||
             key === 'objects' ||
-            key === 'securities'
+            key === 'securities' ||
+            USER_QUERY_KEY
           )
         },
       })
