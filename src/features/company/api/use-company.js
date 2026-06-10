@@ -26,9 +26,20 @@ export const useCompanies = () => {
 }
 
 export const useOneCompany = () => {
+  const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: ONE_COMPANY_QUERY_KEY,
-    queryFn: () => companyApi.getActiveCompany(),
+    queryFn: async () => {
+      try {
+        return await companyApi.getActiveCompany()
+      } catch (error) {
+        if (error.statusCode === 403) {
+          return null
+        }
+
+        throw error
+      }
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   })
@@ -67,6 +78,52 @@ export const useCreateCompany = () => {
 
       queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
       queryClient.invalidateQueries({ queryKey: ONE_COMPANY_QUERY_KEY })
+    },
+  })
+}
+
+export const useUpdateCompany = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data) => companyApi.updateCompany(data),
+
+    onSuccess: (updatedCompany) => {
+      const company = updatedCompany.company ?? updatedCompany
+
+      queryClient.setQueryData(USER_QUERY_KEY, (oldUser) => {
+        if (!oldUser) return oldUser
+
+        return {
+          ...oldUser,
+          companies: (oldUser.companies || []).map((item) =>
+            item.id === company.id ? { ...item, ...company } : item
+          ),
+        }
+      })
+
+      queryClient.setQueryData(ONE_COMPANY_QUERY_KEY, (oldCompany) => {
+        if (!oldCompany) return oldCompany
+
+        return oldCompany.id === company.id ? { ...oldCompany, ...company } : oldCompany
+      })
+
+      queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEY })
+
+      toaster.create({
+        title: 'Успешно',
+        description: 'Данные компании обновлены',
+        type: 'success',
+        duration: 3000,
+      })
+    },
+    onError: (err) => {
+      toaster.create({
+        title: 'Ошибка',
+        description: err.message || 'Ошибка обновления данных компании',
+        type: 'error',
+        duration: 3000,
+      })
     },
   })
 }
