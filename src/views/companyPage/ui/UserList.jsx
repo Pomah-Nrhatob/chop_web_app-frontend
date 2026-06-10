@@ -102,7 +102,7 @@ export const UserList = ({
 
   return (
     <Combobox.Root
-      placeholder="Введите имя и фамилию или email..."
+      placeholder="Введите email пользователя..."
       collection={collection}
       inputBehavior="autocomplete"
       inputValue={searchInput}

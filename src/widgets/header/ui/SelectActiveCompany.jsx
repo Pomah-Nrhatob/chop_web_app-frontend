@@ -10,15 +10,17 @@ import { FiChevronDown } from 'react-icons/fi'
 export function SelectActiveCompany({ companies = [], activeCompany }) {
   const validCompanies = (companies || []).filter((c) => c?.id && typeof c.id === 'string')
 
+  console.log(activeCompany)
+
   const router = useRouter()
 
   const initialValue = validCompanies.length > 0 ? activeCompany : null
-  const [value, setValue] = useState(initialValue)
+  const [value, setValue] = useState(activeCompany ?? '')
   const [selectedCompany, setSelectedCompany] = useState(null)
   const [isOpenConfirm, setIsOpenConfirm] = useState(false)
 
   useEffect(() => {
-    setValue(activeCompany)
+    setValue(activeCompany ?? '')
   }, [activeCompany])
 
   const { changeActiveCompany, isLoading } = useChangeActiveCompany(() => {
@@ -48,17 +50,15 @@ export function SelectActiveCompany({ companies = [], activeCompany }) {
             _placeholder={{ color: 'fg.muted' }}
             disabled={validCompanies.length === 0}
           >
-            {validCompanies.length > 0 ? (
-              validCompanies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name || 'Без названия'}
-                </option>
-              ))
-            ) : (
-              <option value="" disabled>
-                Создайте компанию
+            <option value="" disabled>
+              Выберите компанию
+            </option>
+
+            {validCompanies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name || 'Без названия'}
               </option>
-            )}
+            ))}
           </NativeSelect.Field>
 
           <NativeSelect.Indicator pointerEvents="none">

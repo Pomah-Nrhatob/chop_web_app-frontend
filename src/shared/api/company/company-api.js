@@ -4,6 +4,7 @@ export const companyApi = {
   getAllCompany: async () => apiClient.get('/company', { needAuth: true }),
   getActiveCompany: async () => apiClient.get('/company/getActiveCompany', { needAuth: true }),
   createCompany: async (data) => apiClient.post('/company', { data, needAuth: true }),
+  updateCompany: async (data) => apiClient.put('/company', { data, needAuth: true }),
   deleteCompany: async (companyId) => apiClient.delete(`/company/${companyId}`, { needAuth: true }),
   getAllUserByCompany: async () => apiClient.get('/company/user-company', { needAuth: true }),
   addUserCompany: async (data) => apiClient.post('/company/user-company', { data, needAuth: true }),

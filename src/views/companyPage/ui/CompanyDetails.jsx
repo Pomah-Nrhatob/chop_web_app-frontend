@@ -9,11 +9,18 @@ import {
   Avatar,
   Select,
   createListCollection,
+  Alert,
+  Input,
+  Button,
 } from '@chakra-ui/react'
 import { useState } from 'react'
-import { FiTrash2, FiUser } from 'react-icons/fi'
+import { FiTrash2, FiUser, FiEdit2, FiCheck, FiX } from 'react-icons/fi'
 import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
-import { useDeleteUserCompany, useUpdateUserCompany } from '@/features/company/api/use-company'
+import {
+  useDeleteUserCompany,
+  useUpdateCompany,
+  useUpdateUserCompany,
+} from '@/features/company/api/use-company'
 import AddUserToCompany from '@/views/companyPage/ui/AddUserToCompany'
 import { Tooltip } from '@/components/ui/tooltip'
 import { ConfirmActionDialog } from '@/components/ui/ConfirmActionDialog'
@@ -30,12 +37,15 @@ const roleCollection = createListCollection({
 const CompanyDetails = ({ companyData, currentUserId }) => {
   const { name, createdAt, users = [] } = companyData || {}
 
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [companyName, setCompanyName] = useState(name || '')
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false)
   const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
 
   const { mutate: deleteUser, isPending: isPendingDeleteUser } = useDeleteUserCompany()
   const { mutate: updateUser, isPending: isPendingUpdateUser } = useUpdateUserCompany()
+  const { mutate: updateCompany, isPending: isPendingUpdateCompany } = useUpdateCompany()
 
   const handleDeleteUser = () => {
     deleteUser(selectedUser)
@@ -46,12 +56,103 @@ const CompanyDetails = ({ companyData, currentUserId }) => {
     setIsOpenUpdateDialog(false)
   }
 
+  const handleUpdateCompanyName = () => {
+    const trimmedName = companyName.trim()
+
+    if (!trimmedName) return
+
+    updateCompany(
+      { name: trimmedName },
+      {
+        onSuccess: () => {
+          setIsEditingName(false)
+        },
+      }
+    )
+  }
+
+  if (!companyData) {
+    return (
+      <Alert.Root status="warning" borderRadius="lg">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>Нет доступа к информации компании</Alert.Title>
+          <Alert.Description>
+            Просмотр информации о компании доступен только администраторам.
+          </Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+    )
+  }
+
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={5} boxShadow="md">
       <VStack display="flex" w="100%">
         <Box w="100%">
           <HStack justify="space-between" w="100%">
-            <Heading size="md">{name || 'Название не указано'}</Heading>
+            <HStack>
+              {isEditingName ? (
+                <>
+                  <Input
+                    size="sm"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Название компании"
+                    maxW="250px"
+                    variant="flushed"
+                  />
+
+                  <HStack gap={1}>
+                    <Tooltip content="Сохранить">
+                      <IconButton
+                        aria-label="Сохранить название"
+                        size="xs"
+                        colorPalette="green"
+                        variant="ghost"
+                        onClick={handleUpdateCompanyName}
+                        loading={isPendingUpdateCompany}
+                        disabled={!companyName.trim()}
+                      >
+                        <FiCheck />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip content="Отменить">
+                      <IconButton
+                        aria-label="Отменить редактирование"
+                        size="xs"
+                        variant="ghost"
+                        onClick={() => {
+                          setCompanyName(name || '')
+                          setIsEditingName(false)
+                        }}
+                      >
+                        <FiX />
+                      </IconButton>
+                    </Tooltip>
+                  </HStack>
+                </>
+              ) : (
+                <>
+                  <Heading size="md">{name || 'Название не указано'}</Heading>
+
+                  <Tooltip content="Редактировать название">
+                    <IconButton
+                      aria-label="Редактировать название компании"
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => {
+                        setCompanyName(name || '')
+                        setIsEditingName(true)
+                      }}
+                    >
+                      <FiEdit2 />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+            </HStack>
+
             <Badge colorScheme="green">Активна</Badge>
           </HStack>
           {createdAt && (
