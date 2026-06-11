@@ -12,6 +12,26 @@ const getExtensionFromContentType = (contentType = '') => {
 }
 
 export const useGetReportObject = ({ objectId, query, enabled = true }) => {
+  const getFileNameFromHeaders = (headers) => {
+    const contentDisposition = headers.get('content-disposition')
+
+    if (!contentDisposition) return null
+
+    const utf8FileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+
+    if (utf8FileNameMatch?.[1]) {
+      return decodeURIComponent(utf8FileNameMatch[1])
+    }
+
+    const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+
+    if (fileNameMatch?.[1]) {
+      return decodeURIComponent(fileNameMatch[1])
+    }
+
+    return null
+  }
+
   return useQuery({
     queryKey: ['report-object', objectId, query],
     enabled: Boolean(objectId) && enabled,
@@ -29,6 +49,8 @@ export const useGetReportObject = ({ objectId, query, enabled = true }) => {
         const contentType = response.headers?.['content-type']
         const extension = getExtensionFromContentType(contentType)
 
+        const fileName = getFileNameFromHeaders(response.headers) ?? 'report.pdf'
+
         const fileBlob = new Blob([blob], {
           type: contentType,
         })
@@ -40,9 +62,10 @@ export const useGetReportObject = ({ objectId, query, enabled = true }) => {
           url: fileUrl,
           contentType,
           extension,
-          isPdf: extension === 'pdf',
-          isExcel: extension === 'xlsx',
-          fileName: `report.${extension}`,
+          isPdf: blob.type === 'application/pdf',
+          isExcel:
+            blob.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          fileName,
         }
       } catch (err) {
         console.log(err)

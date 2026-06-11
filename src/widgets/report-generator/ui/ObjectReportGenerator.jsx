@@ -8,7 +8,7 @@ import { MdClose } from 'react-icons/md'
 import { useGeneratorReportQueryStore } from '@/features/report/store/useGeneratorReportQueryStore'
 import SelectYearMonth from '@/widgets/report-generator/ui/SelectYearMonth'
 import SelectDateRange from '@/widgets/report-generator/ui/SelectDateRange'
-import { LuDownload, LuFileText, LuFileSpreadsheet } from 'react-icons/lu'
+import { LuDownload, LuFileText, LuFileSpreadsheet, LuExternalLink } from 'react-icons/lu'
 import { useGetReportObject } from '@/features/report/api/use-get-report-object'
 import SelectObject from '@/features/dictionary/components/selectWithSearch/SelectObject'
 import { TbReportAnalytics } from 'react-icons/tb'
@@ -39,12 +39,13 @@ export default function ObjectReportGenerator({
   year = null,
   month = null,
 }) {
-  // const [open, setOpen] = useState(false)
   const [pdfGenerated, setPdfGenerated] = useState(false)
-
   const [internalOpen, setInternalOpen] = useState(false)
 
   const open = controlledOpen ?? internalOpen
+
+  const queryClient = useQueryClient()
+  const { queryParams, setQueryParams, resetToDefaults } = useGeneratorReportQueryStore()
 
   const handleOpenChange = (details) => {
     if (onOpenChange) {
@@ -58,8 +59,6 @@ export default function ObjectReportGenerator({
       clearReports()
     }
   }
-
-  const { queryParams, setQueryParams, resetToDefaults } = useGeneratorReportQueryStore()
 
   useEffect(() => {
     if (!open) return
@@ -82,8 +81,6 @@ export default function ObjectReportGenerator({
       setQueryParams(nextParams)
     }
   }, [open, itemId, year, month, setQueryParams])
-
-  const queryClient = useQueryClient()
 
   const reportQuery = useMemo(() => {
     if (queryParams.periodType === 'range') {
@@ -127,7 +124,7 @@ export default function ObjectReportGenerator({
     const excelUrl = excelReport.data?.url
 
     queryClient.removeQueries({
-      queryKey: ['report-security'],
+      queryKey: ['report-object'],
     })
 
     setPdfGenerated(false)
@@ -156,12 +153,20 @@ export default function ObjectReportGenerator({
     }
   }
 
+  const openFileInNewTab = (file) => {
+    if (!file?.url) return
+
+    window.open(file.url, '_blank', 'noopener,noreferrer')
+  }
+
   const downloadFile = (file) => {
     if (!file?.url) return
 
     const link = document.createElement('a')
     link.href = file.url
-    link.download = file.fileName
+    link.download = file.fileName || 'report'
+    link.target = '_blank'
+
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -181,12 +186,7 @@ export default function ObjectReportGenerator({
     >
       {!hideTrigger && (
         <Dialog.Trigger asChild>
-          <IconButton
-            size={{ base: 'xs', md: 'md' }}
-            onClick={handleOpenChange}
-            px={2}
-            variant="outline"
-          >
+          <IconButton size={{ base: 'xs', md: 'md' }} px={2} variant="outline">
             <TbReportAnalytics />
             Сформировать отчет
           </IconButton>
@@ -244,6 +244,15 @@ export default function ObjectReportGenerator({
                 >
                   <LuFileText />
                   Сформировать PDF
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => openFileInNewTab(pdfReport.data)}
+                  disabled={!pdfReport.data?.isPdf}
+                >
+                  <LuExternalLink />
+                  Открыть PDF
                 </Button>
 
                 <Button
