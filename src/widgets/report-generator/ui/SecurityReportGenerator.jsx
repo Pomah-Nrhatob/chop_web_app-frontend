@@ -59,6 +59,12 @@ export default function SecurityReportGenerator({
     }
   }
 
+  const openFileInNewTab = (file) => {
+    if (!file?.url) return
+
+    window.open(file.url, '_blank', 'noopener,noreferrer')
+  }
+
   const queryClient = useQueryClient()
   const { queryParams, setQueryParams, resetToDefaults } = useGeneratorReportQueryStore()
 
@@ -237,6 +243,15 @@ export default function SecurityReportGenerator({
                 >
                   <LuFileText />
                   Сформировать PDF
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => openFileInNewTab(pdfReport.data)}
+                  disabled={!pdfReport.data?.isPdf}
+                >
+                  <LuFileText />
+                  Открыть PDF
                 </Button>
 
                 <Button
