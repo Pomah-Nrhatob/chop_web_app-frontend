@@ -77,7 +77,7 @@ export default function CalendarAllObjects() {
               <SimpleGrid
                 columns={TOTAL_COLUMNS}
                 spacing={1}
-                minChildWidth={{ base: '60px', md: '100px' }}
+                minChildWidth={{ base: '55px', md: '100px' }}
                 position="sticky"
                 top={0}
                 zIndex={10}
@@ -192,7 +192,7 @@ export default function CalendarAllObjects() {
                       key={obj.id}
                       columns={TOTAL_COLUMNS}
                       spacing={1}
-                      minChildWidth={{ base: '60px', md: '100px' }}
+                      minChildWidth={{ base: '55px', md: '100px' }}
                     >
                       <Box
                         h="70px"

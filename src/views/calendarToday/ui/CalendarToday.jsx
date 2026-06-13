@@ -257,7 +257,7 @@ export default function CalendarToday() {
                             border="2px solid"
                             borderColor="gray.300"
                             borderRadius="lg"
-                            p={{ base: 3, md: 4 }}
+                            py={{ base: 3, md: 4 }}
                             shadow="sm"
                           >
                             {securityWorkers.length > 0 ? (
