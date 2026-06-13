@@ -59,6 +59,23 @@ export default function SecurityReportGenerator({
     }
   }
 
+  const isMobileDevice = () => {
+    if (typeof window === 'undefined') return false
+
+    return window.matchMedia('(max-width: 768px)').matches
+  }
+
+  const handlePdfAction = () => {
+    if (!pdfReport.data) return
+
+    if (isMobileDevice()) {
+      openFileInNewTab(pdfReport.data)
+      return
+    }
+
+    downloadFile(pdfReport.data)
+  }
+
   const openFileInNewTab = (file) => {
     if (!file?.url) return
 
@@ -186,7 +203,7 @@ export default function SecurityReportGenerator({
     >
       {!hideTrigger && (
         <Dialog.Trigger asChild>
-          <IconButton size={{ base: 'xs', md: 'md' }} px={2} variant="outline">
+          <IconButton size={{ base: 'xs', md: 'sm' }} px={2}>
             <TbReportAnalytics />
             Сформировать отчет
           </IconButton>
@@ -247,16 +264,7 @@ export default function SecurityReportGenerator({
 
                 <Button
                   variant="outline"
-                  onClick={() => openFileInNewTab(pdfReport.data)}
-                  disabled={!pdfReport.data?.isPdf}
-                >
-                  <LuFileText />
-                  Открыть PDF
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => downloadFile(pdfReport.data)}
+                  onClick={handlePdfAction}
                   disabled={!pdfReport.data?.isPdf}
                 >
                   <LuDownload />

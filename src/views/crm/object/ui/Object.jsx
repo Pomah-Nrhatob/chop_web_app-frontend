@@ -12,20 +12,22 @@ import {
   DialogRoot,
   DialogTitle,
 } from '@/components/ui/dialog'
+import ContainerForPage from '@/components/containerForPage/ContainerForPage'
+import { FiPlus } from 'react-icons/fi'
 
 export default function Object() {
   const [open, setOpen] = useState(false)
 
   return (
-    <Box p={8} maxW="1600px" mx="auto">
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg">Управление объектами</Heading>
-
-        <Button colorPalette="blue" onClick={() => setOpen(true)}>
-          + Добавить объект
+    <ContainerForPage
+      title="Объекты"
+      text="Раздел для управления объектами в системе"
+      actionComponent={
+        <Button size={{ base: 'xs', md: 'sm' }} onClick={() => setOpen(true)}>
+          <FiPlus /> Добавить объект
         </Button>
-      </Flex>
-
+      }
+    >
       <Box mt={4}>
         <ObjectList />
       </Box>
@@ -43,6 +45,6 @@ export default function Object() {
           <DialogCloseTrigger />
         </DialogContent>
       </DialogRoot>
-    </Box>
+    </ContainerForPage>
   )
 }

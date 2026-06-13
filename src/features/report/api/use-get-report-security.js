@@ -49,14 +49,14 @@ export const useGetReportSecurity = ({ securityId, query, enabled = true }) => {
         const contentDisposition = response.headers?.['content-disposition'] || ''
 
         const extension = getExtensionFromContentType(contentType)
+        const fileNameFromHeader = getFileNameFromContentDisposition(contentDisposition)
+        const fileName = fileNameFromHeader || `report.${extension}`
 
-        const fileBlob = new Blob([blob], {
+        const fileBlob = new File([blob], fileName, {
           type: contentType,
         })
 
         const fileUrl = URL.createObjectURL(fileBlob)
-
-        const fileNameFromHeader = getFileNameFromContentDisposition(contentDisposition)
 
         return {
           blob: fileBlob,
@@ -65,7 +65,7 @@ export const useGetReportSecurity = ({ securityId, query, enabled = true }) => {
           extension,
           isPdf: extension === 'pdf',
           isExcel: extension === 'xlsx',
-          fileName: fileNameFromHeader || `report.${extension}`,
+          fileName,
         }
       } catch (err) {
         toaster.create({

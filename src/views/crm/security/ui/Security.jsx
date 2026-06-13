@@ -12,20 +12,22 @@ import {
   DialogRoot,
   DialogTitle,
 } from '@/components/ui/dialog'
+import ContainerForPage from '@/components/containerForPage/ContainerForPage'
+import { FiPlus } from 'react-icons/fi'
 
 export default function Security() {
   const [open, setOpen] = useState(false)
 
   return (
-    <Box p={8} maxW="1600px" mx="auto">
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg">Управление охраной</Heading>
-
-        <Button colorPalette="blue" onClick={() => setOpen(true)}>
-          + Добавить охранника
+    <ContainerForPage
+      title="Сотрудники"
+      text="Раздел для управления сотрудниками в системе"
+      actionComponent={
+        <Button size={{ base: 'xs', md: 'sm' }} onClick={() => setOpen(true)}>
+          <FiPlus /> Добавить охранника
         </Button>
-      </Flex>
-
+      }
+    >
       <Box mt={4}>
         <SecurityList />
       </Box>
@@ -43,6 +45,6 @@ export default function Security() {
           <DialogCloseTrigger />
         </DialogContent>
       </DialogRoot>
-    </Box>
+    </ContainerForPage>
   )
 }
