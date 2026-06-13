@@ -1,5 +1,6 @@
 'use client'
 
+import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import ObjectReportGenerator from '@/widgets/report-generator/ui/ObjectReportGenerator'
 import SecurityReportGenerator from '@/widgets/report-generator/ui/SecurityReportGenerator'
 import { Box, SimpleGrid, Heading, Text, VStack, Icon, Center } from '@chakra-ui/react'
@@ -66,70 +67,62 @@ export default function BcRootPage() {
         hideTrigger
       />
 
-      <Center minH="80vh" p={6}>
-        <VStack gap={8} w="full" maxW="900px">
-          <VStack gap={2} textAlign="center">
-            <Heading size="2xl" letterSpacing="tight">
-              Панель управления BC
-            </Heading>
-            <Text color="gray.500" fontSize="lg">
-              Выберите раздел для работы с данными
-            </Text>
-          </VStack>
+      <ContainerForPage
+        title="Быстрый доступ к разделам"
+        text="Выберите раздел для работы с данными"
+      >
+        <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} w="full">
+          {navigationCards.map((card) => {
+            const content = (
+              <Box
+                p={8}
+                height="full"
+                borderWidth="1px"
+                borderRadius="2xl"
+                transition="all 0.3s"
+                cursor="pointer"
+                bg="white"
+                _hover={{
+                  transform: 'translateY(-5px)',
+                  shadow: 'xl',
+                  borderColor: card.color,
+                }}
+                role="group"
+              >
+                <VStack align="start" gap={4}>
+                  <Center
+                    p={3}
+                    bg="gray.50"
+                    borderRadius="xl"
+                    _groupHover={{ bg: `${card.color.split('.')[0]}.50` }}
+                  >
+                    <Icon as={card.icon} boxSize={8} color={card.color} />
+                  </Center>
 
-          <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} w="full">
-            {navigationCards.map((card) => {
-              const content = (
-                <Box
-                  p={8}
-                  height="full"
-                  borderWidth="1px"
-                  borderRadius="2xl"
-                  transition="all 0.3s"
-                  cursor="pointer"
-                  bg="white"
-                  _hover={{
-                    transform: 'translateY(-5px)',
-                    shadow: 'xl',
-                    borderColor: card.color,
-                  }}
-                  role="group"
-                >
-                  <VStack align="start" gap={4}>
-                    <Center
-                      p={3}
-                      bg="gray.50"
-                      borderRadius="xl"
-                      _groupHover={{ bg: `${card.color.split('.')[0]}.50` }}
-                    >
-                      <Icon as={card.icon} boxSize={8} color={card.color} />
-                    </Center>
+                  <Box>
+                    <Heading size="md" mb={2}>
+                      {card.title}
+                    </Heading>
+                    <Text color="gray.600" fontSize="sm">
+                      {card.description}
+                    </Text>
+                  </Box>
+                </VStack>
+              </Box>
+            )
 
-                    <Box>
-                      <Heading size="md" mb={2}>
-                        {card.title}
-                      </Heading>
-                      <Text color="gray.600" fontSize="sm">
-                        {card.description}
-                      </Text>
-                    </Box>
-                  </VStack>
-                </Box>
-              )
-
-              return card.type === 'link' ? (
-                <Link key={card.id} href={card.href} style={{ textDecoration: 'none' }}>
-                  {content}
-                </Link>
-              ) : (
-                <Box key={card.id} onClick={card.onClick}>
-                  {content}
-                </Box>
-              )
-            })}
-          </SimpleGrid>
-        </VStack>
-      </Center>
+            return card.type === 'link' ? (
+              <Link key={card.id} href={card.href} style={{ textDecoration: 'none' }}>
+                {content}
+              </Link>
+            ) : (
+              <Box key={card.id} onClick={card.onClick}>
+                {content}
+              </Box>
+            )
+          })}
+        </SimpleGrid>
+      </ContainerForPage>
     </>
   )
 }

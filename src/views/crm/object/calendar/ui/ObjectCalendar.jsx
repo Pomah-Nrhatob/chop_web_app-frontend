@@ -29,6 +29,7 @@ import CalendarHeader from './CalendarHeader'
 import CalendarGrid from './CalendarGrid'
 import CalendarActionBar from './CalendarActionBar'
 import ObjectReportGenerator from '@/widgets/report-generator/ui/ObjectReportGenerator'
+import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 
 export default function ObjectCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -50,7 +51,9 @@ export default function ObjectCalendar() {
     if (isDictLoading || !objectsDictionary?.length) {
       return `Объект #${securityObjectId}`
     }
+
     const currentObject = objectsDictionary.find((el) => el.id === securityObjectId)
+
     return currentObject ? currentObject.title : `Объект #${securityObjectId}`
   }, [isDictLoading, objectsDictionary, securityObjectId])
 
@@ -62,10 +65,15 @@ export default function ObjectCalendar() {
     isLoading,
     isError,
     isFetching,
-  } = useGetCalendarObjectWorkdays({ securityObjectId, year, month })
+  } = useGetCalendarObjectWorkdays({
+    securityObjectId,
+    year,
+    month,
+  })
 
   const shifts = useMemo(() => {
     if (!serverShifts || !Array.isArray(serverShifts)) return []
+
     return serverShifts.map((shift) => ({
       ...shift,
       parsedDate:
@@ -74,11 +82,15 @@ export default function ObjectCalendar() {
   }, [serverShifts])
 
   const monthStart = startOfMonth(currentMonth)
+
   const calendarDays = eachDayOfInterval({
     start: startOfWeek(monthStart, { weekStartsOn: 1 }),
     end: endOfWeek(endOfMonth(monthStart), { weekStartsOn: 1 }),
   })
+
   const currentMonthDays = calendarDays.filter((day) => isSameMonth(day, monthStart))
+
+  const isPageLoading = isDictLoading || isLoading || isFetching
 
   const handleDateClick = (day) => {
     setSelectedDates((prev) =>
@@ -90,7 +102,6 @@ export default function ObjectCalendar() {
     if (!isSameMonth(day, monthStart)) return
 
     const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
-
     const totalWorkersInDay = dayShifts.reduce((sum, s) => sum + (s.totalWorkers || 0), 0)
 
     if (calendarMode === 'view') {
@@ -98,6 +109,7 @@ export default function ObjectCalendar() {
         setSelectedWorkday(dayShifts[0].objectWorkdayId || dayShifts[0].id)
         setOpenOneDayDialog(true)
       }
+
       return
     }
 
@@ -106,38 +118,55 @@ export default function ObjectCalendar() {
 
   const handleShiftClick = (e, shift) => {
     e.stopPropagation()
+
     if (calendarMode === 'edit') return
+
     setSelectedWorkday(shift.id)
     setOpenOneDayDialog(true)
   }
 
-  const handleToggleExpand = (dayKey) =>
-    setExpandedCells((prev) => ({ ...prev, [dayKey]: !prev[dayKey] }))
-  const handleDateChange = ({ year: y, month: m }) => setCurrentMonth(new Date(y, m - 1, 1))
-  const handleModeChange = (mode) => {
-    setCalendarMode(mode)
-    if (mode === 'view') setSelectedDates([])
+  const handleToggleExpand = (dayKey) => {
+    setExpandedCells((prev) => ({
+      ...prev,
+      [dayKey]: !prev[dayKey],
+    }))
   }
 
-  const selectAllDays = () => setSelectedDates(currentMonthDays)
+  const handleDateChange = ({ year: y, month: m }) => {
+    setCurrentMonth(new Date(y, m - 1, 1))
+  }
+
+  const handleModeChange = (mode) => {
+    setCalendarMode(mode)
+
+    if (mode === 'view') {
+      setSelectedDates([])
+    }
+  }
+
+  const selectAllDays = () => {
+    setSelectedDates(currentMonthDays)
+  }
+
   const selectDaysWithoutShifts = () => {
     const emptyDays = currentMonthDays.filter((day) => {
       const dayShifts = shifts.filter((s) => isSameDay(s.parsedDate, day))
       const total = dayShifts.reduce((sum, s) => sum + (s.totalWorkers || 0), 0)
+
       return dayShifts.length === 0 || total === 0
     })
+
     setSelectedDates(emptyDays)
   }
 
   const handleOpenCreateDialog = () => {
-    setEmptyDayInfo({ objectId: securityObjectId, dates: selectedDates })
+    setEmptyDayInfo({
+      objectId: securityObjectId,
+      dates: selectedDates,
+    })
+
     setOpenEmptyDayDialog(true)
   }
-
-  if (isDictLoading || isLoading || isFetching) {
-    return <CalendarLoader title={`Объект #${securityObjectId}`} />
-  }
-  if (isError) return <CalendarError title={stableTitle} />
 
   return (
     <>
@@ -147,6 +176,7 @@ export default function ObjectCalendar() {
         selectedWorkday={selectedWorkday}
         setSelectedWorkday={setSelectedWorkday}
       />
+
       <EmptyDayDialogObjects
         emptyDayInfo={emptyDayInfo}
         setEmptyDayInfo={setEmptyDayInfo}
@@ -155,112 +185,95 @@ export default function ObjectCalendar() {
         onSuccessAction={() => setSelectedDates([])}
       />
 
-      <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-        <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
-          <Text
-            fontSize="sm"
-            fontWeight="bold"
-            color="blue.500"
-            textTransform="uppercase"
-            letterSpacing="wider"
-          >
-            Календарь расписания
-          </Text>
-          <Flex alignItems="center" justifyContent="space-between">
-            <Heading size="lg" color="gray.800" mt={1}>
-              {stableTitle}
-            </Heading>
+      <ContainerForPage
+        title="Календарь объекта"
+        text={`Раздел для управления рабочими днями объекта "${stableTitle}"`}
+        actionComponent={
+          !isPageLoading &&
+          !isError && (
             <ObjectReportGenerator
               itemId={securityObjectId || null}
               year={year || null}
               month={month || null}
             />
+          )
+        }
+      >
+        {isPageLoading ? (
+          <Flex
+            minH="320px"
+            align="center"
+            justify="center"
+            bg="white"
+            borderRadius="xl"
+            shadow="sm"
+          >
+            <Spinner size="lg" color="blue.500" thickness="3px" />
           </Flex>
-        </Box>
+        ) : isError ? (
+          <Flex
+            minH="320px"
+            align="center"
+            justify="center"
+            bg="white"
+            borderRadius="xl"
+            shadow="sm"
+            color="red.500"
+          >
+            <Text>Ошибка загрузки данных с сервера</Text>
+          </Flex>
+        ) : (
+          <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+            <Button
+              variant="ghost"
+              justifyContent="space-between"
+              onClick={() => setIsListOpen((prev) => !prev)}
+            >
+              {isListOpen ? 'Скрыть список объектов' : 'Открыть список объектов'}
+              {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
+            </Button>
 
-        <Button
-          variant="ghost"
-          justifyContent="space-between"
-          onClick={() => setIsListOpen(!isListOpen)}
-        >
-          {isListOpen ? 'Скрыть список объектов' : 'Открыть список объектов'}
-          {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
-        </Button>
-        {isListOpen && <ObjectList />}
+            {isListOpen && <ObjectList />}
 
-        <CalendarHeader
-          objectTitle={stableTitle}
-          currentMonth={currentMonth}
-          year={year}
-          month={month}
-          calendarMode={calendarMode}
-          isListOpen={isListOpen}
-          onToggleList={() => setIsListOpen(!isListOpen)}
-          onDateChange={handleDateChange}
-          onModeChange={handleModeChange}
-          onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          onToday={() => setCurrentMonth(new Date())}
-          onSelectAllDays={selectAllDays}
-          onSelectEmptyDays={selectDaysWithoutShifts}
-        />
+            <CalendarHeader
+              objectTitle={stableTitle}
+              currentMonth={currentMonth}
+              year={year}
+              month={month}
+              calendarMode={calendarMode}
+              isListOpen={isListOpen}
+              onToggleList={() => setIsListOpen((prev) => !prev)}
+              onDateChange={handleDateChange}
+              onModeChange={handleModeChange}
+              onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              onToday={() => setCurrentMonth(new Date())}
+              onSelectAllDays={selectAllDays}
+              onSelectEmptyDays={selectDaysWithoutShifts}
+            />
 
-        <CalendarGrid
-          calendarDays={calendarDays}
-          monthStart={monthStart}
-          shifts={shifts}
-          selectedDates={selectedDates}
-          isToday={(day) => isSameDay(day, new Date())}
-          calendarMode={calendarMode}
-          expandedCells={expandedCells}
-          onCellClick={handleDayCellClick}
-          onShiftClick={handleShiftClick}
-          onToggleExpand={handleToggleExpand}
-          objectsDictionary={objectsDictionary}
-        />
+            <CalendarGrid
+              calendarDays={calendarDays}
+              monthStart={monthStart}
+              shifts={shifts}
+              selectedDates={selectedDates}
+              isToday={(day) => isSameDay(day, new Date())}
+              calendarMode={calendarMode}
+              expandedCells={expandedCells}
+              onCellClick={handleDayCellClick}
+              onShiftClick={handleShiftClick}
+              onToggleExpand={handleToggleExpand}
+              objectsDictionary={objectsDictionary}
+            />
 
-        <CalendarActionBar
-          selectedDates={selectedDates}
-          onAssign={handleOpenCreateDialog}
-          onClear={() => setSelectedDates([])}
-        />
-      </VStack>
+            <CalendarActionBar
+              selectedDates={selectedDates}
+              onAssign={handleOpenCreateDialog}
+              onClear={() => setSelectedDates([])}
+            />
+          </VStack>
+        )}
+      </ContainerForPage>
     </>
-  )
-}
-
-function CalendarLoader({ title }) {
-  return (
-    <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-      <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
-        <Text fontSize="sm" fontWeight="bold" color="blue.500" textTransform="uppercase">
-          Календарь расписания
-        </Text>
-        <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
-          {title}
-        </Heading>
-      </Box>
-      <Box h="calc(75vh - 200px)" display="flex" alignItems="center" justifyContent="center">
-        <Spinner size="lg" color="blue.500" thickness="3px" />
-      </Box>
-    </VStack>
-  )
-}
-
-function CalendarError({ title }) {
-  return (
-    <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-      <Box borderBottom="1px solid" borderColor="gray.100" pb={2}>
-        <Text fontSize="sm" fontWeight="bold" color="blue.500" textTransform="uppercase">
-          Календарь расписания
-        </Text>
-        <Heading size="lg" color="gray.800" mt={1} suppressHydrationWarning>
-          {title}
-        </Heading>
-      </Box>
-      <Flex h="200px" align="center" justify="center" color="red.500">
-        <Text>Ошибка загрузки данных с сервера</Text>
-      </Flex>
-    </VStack>
   )
 }

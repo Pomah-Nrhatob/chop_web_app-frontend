@@ -186,7 +186,7 @@ export default function ObjectReportGenerator({
     >
       {!hideTrigger && (
         <Dialog.Trigger asChild>
-          <IconButton size={{ base: 'xs', md: 'md' }} px={2} variant="outline">
+          <IconButton size={{ base: 'xs', md: 'sm' }} px={2}>
             <TbReportAnalytics />
             Сформировать отчет
           </IconButton>

@@ -4,6 +4,7 @@ import { toaster } from '@/providers/chakraProvider/toaster'
 
 const getExtensionFromContentType = (contentType = '') => {
   if (contentType.includes('pdf')) return 'pdf'
+
   if (contentType.includes('spreadsheetml') || contentType.includes('excel')) {
     return 'xlsx'
   }
@@ -11,27 +12,27 @@ const getExtensionFromContentType = (contentType = '') => {
   return 'file'
 }
 
-export const useGetReportObject = ({ objectId, query, enabled = true }) => {
-  const getFileNameFromHeaders = (headers) => {
-    const contentDisposition = headers.get('content-disposition')
+const getFileNameFromHeaders = (headers) => {
+  const contentDisposition = headers?.['content-disposition']
 
-    if (!contentDisposition) return null
+  if (!contentDisposition) return null
 
-    const utf8FileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+  const utf8FileNameMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
 
-    if (utf8FileNameMatch?.[1]) {
-      return decodeURIComponent(utf8FileNameMatch[1])
-    }
-
-    const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
-
-    if (fileNameMatch?.[1]) {
-      return decodeURIComponent(fileNameMatch[1])
-    }
-
-    return null
+  if (utf8FileNameMatch?.[1]) {
+    return decodeURIComponent(utf8FileNameMatch[1].trim())
   }
 
+  const fileNameMatch = contentDisposition.match(/filename="?([^";]+)"?/i)
+
+  if (fileNameMatch?.[1]) {
+    return decodeURIComponent(fileNameMatch[1].trim())
+  }
+
+  return null
+}
+
+export const useGetReportObject = ({ objectId, query, enabled = true }) => {
   return useQuery({
     queryKey: ['report-object', objectId, query],
     enabled: Boolean(objectId) && enabled,
@@ -46,12 +47,12 @@ export const useGetReportObject = ({ objectId, query, enabled = true }) => {
         const response = await reportGeneratorApi.getReportObject(query, objectId)
 
         const blob = response.data
-        const contentType = response.headers?.['content-type']
+        const contentType = response.headers?.['content-type'] || ''
         const extension = getExtensionFromContentType(contentType)
 
-        const fileName = getFileNameFromHeaders(response.headers) ?? 'report.pdf'
+        const fileName = getFileNameFromHeaders(response.headers) ?? `report.${extension}`
 
-        const fileBlob = new Blob([blob], {
+        const fileBlob = new File([blob], fileName, {
           type: contentType,
         })
 
@@ -62,9 +63,8 @@ export const useGetReportObject = ({ objectId, query, enabled = true }) => {
           url: fileUrl,
           contentType,
           extension,
-          isPdf: blob.type === 'application/pdf',
-          isExcel:
-            blob.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          isPdf: extension === 'pdf',
+          isExcel: extension === 'xlsx',
           fileName,
         }
       } catch (err) {

@@ -35,6 +35,7 @@ import { toaster } from '@/providers/chakraProvider/toaster'
 import { useUser } from '@/features/users/api/use-user'
 import CompanyDetails from '@/views/companyPage/ui/CompanyDetails'
 import UserCompaniesList from '@/views/companyPage/ui/UserCompaniesList'
+import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 
 export default function Company() {
   const [isOpen, setIsOpen] = useState(false)
@@ -89,73 +90,63 @@ export default function Company() {
   }
 
   return (
-    <Container maxW="container.lg" pt={10} pb={20} display="flex" gap={6} flexDirection="column">
-      <VStack spacing={6} align="stretch">
-        {/* Заголовок страницы */}
-        <HStack justify="space-between" align="center">
-          <Box>
-            <Heading size="lg" mb={1}>
-              Мои компании
-            </Heading>
-            <Text color="gray.500" fontSize="sm">
-              Управление доступом и ролями в организациях
-            </Text>
-          </Box>
-          {/* Модалка создания компании */}
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
-              <DialogTrigger asChild>
-                <Button colorScheme="blue">
-                  <FiPlus /> Создать компанию
-                </Button>
-              </DialogTrigger>
-              <DialogBackdrop />
-              <DialogPositioner>
-                <DialogContent>
-                  <DialogCloseTrigger />
-                  <DialogHeader>
-                    <DialogTitle>Создать компанию</DialogTitle>
-                  </DialogHeader>
-                  <DialogBody>
-                    <VStack spacing={4}>
-                      <Box w="full">
-                        <Field.Root invalid={!!errors.name}>
-                          <Field.Label fontSize="sm" mb={1}>
-                            Название компании
-                          </Field.Label>
-                          <Input
-                            autoFocus
-                            {...register('name')}
-                            type="text"
-                            placeholder="ООО Название"
-                          />
-                          <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
-                        </Field.Root>
-                      </Box>
-                    </VStack>
-                  </DialogBody>
-                  <DialogFooter>
-                    <DialogActionTrigger asChild>
-                      <Button disabled={isSubmitting} variant="ghost">
-                        Отмена
-                      </Button>
-                    </DialogActionTrigger>
-                    <Button
-                      isLoading={isSubmitting}
-                      loadingText="Создание..."
-                      type="submit"
-                      colorScheme="blue"
-                    >
-                      Создать
+    <ContainerForPage
+      title="Мои компании"
+      text="Управление доступом и ролями в организациях"
+      actionComponent={
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+              <Button size={{ base: 'xs', md: 'sm' }}>
+                <FiPlus /> Создать компанию
+              </Button>
+            </DialogTrigger>
+            <DialogBackdrop />
+            <DialogPositioner>
+              <DialogContent>
+                <DialogCloseTrigger />
+                <DialogHeader>
+                  <DialogTitle>Создать компанию</DialogTitle>
+                </DialogHeader>
+                <DialogBody>
+                  <VStack spacing={4}>
+                    <Box w="full">
+                      <Field.Root invalid={!!errors.name}>
+                        <Field.Label fontSize="sm" mb={1}>
+                          Название компании
+                        </Field.Label>
+                        <Input
+                          autoFocus
+                          {...register('name')}
+                          type="text"
+                          placeholder="ООО Название"
+                        />
+                        <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
+                      </Field.Root>
+                    </Box>
+                  </VStack>
+                </DialogBody>
+                <DialogFooter>
+                  <DialogActionTrigger asChild>
+                    <Button disabled={isSubmitting} variant="ghost">
+                      Отмена
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </DialogPositioner>
-            </DialogRoot>
-          </form>
-        </HStack>
-      </VStack>
-
+                  </DialogActionTrigger>
+                  <Button
+                    isLoading={isSubmitting}
+                    loadingText="Создание..."
+                    type="submit"
+                    colorScheme="blue"
+                  >
+                    Создать
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </DialogPositioner>
+          </DialogRoot>
+        </form>
+      }
+    >
       {isLoadingCompany || isFetchingCompany ? (
         <Spinner />
       ) : (
@@ -171,6 +162,6 @@ export default function Company() {
           />
         </>
       )}
-    </Container>
+    </ContainerForPage>
   )
 }

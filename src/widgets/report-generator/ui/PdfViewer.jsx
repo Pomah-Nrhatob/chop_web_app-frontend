@@ -69,7 +69,7 @@ export default function PdfViewer({ fileUrl }) {
       <Viewer
         fileUrl={fileUrl}
         plugins={[defaultLayoutPluginInstance]}
-        defaultScale={isMobile ? 0.6 : SpecialZoomLevel.PageWidth}
+        defaultScale={isMobile ? 0.4 : SpecialZoomLevel.PageWidth}
       />
     </Worker>
   )
