@@ -96,6 +96,7 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
   const newWorkdays = useWatch({ name: 'newWorkdays', control }) || []
   const updatedWorkdays = useWatch({ name: 'updatedWorkdays', control }) || []
 
+
   // Используем useMemo для вычисления производных данных
   const deletedSet = useMemo(() => new Set(deletedWorkdays), [deletedWorkdays])
   const updatedMap = useMemo(() => {
