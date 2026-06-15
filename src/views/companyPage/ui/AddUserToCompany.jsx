@@ -64,8 +64,12 @@ export default function AddUserToCompany({ companyData }) {
       </Box>
 
       <DialogBackdrop />
-      <DialogPositioner>
-        <DialogContent>
+      <DialogPositioner
+        display="flex"
+        alignItems={{ base: 'center', md: 'flex-start' }}
+        justifyContent="center"
+      >
+        <DialogContent w={{ base: 'calc(100vw - 24px)', md: '100%' }} py={2} px={2}>
           <DialogCloseTrigger />
           <DialogHeader>
             <DialogTitle>Добавить пользователя в компанию</DialogTitle>

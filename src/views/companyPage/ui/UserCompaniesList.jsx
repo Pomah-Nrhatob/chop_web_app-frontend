@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Box, Heading, VStack, HStack, Text, IconButton, Badge } from '@chakra-ui/react'
-import { FiTrash2, FiCheck } from 'react-icons/fi'
+import { FiTrash2, FiCheck, FiLogIn } from 'react-icons/fi'
 import { FaBuilding } from 'react-icons/fa'
 import { useDeleteCompany } from '@/features/company/api/use-company'
 import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog'
@@ -94,7 +94,7 @@ const UserCompaniesList = ({ companies = [], currentUserId, activeCompanyId, onS
                     </Badge>
                   ) : (
                     <>
-                      <Tooltip content="Сделать компанию активной">
+                      <Tooltip content="Переключиться на эту компанию">
                         <IconButton
                           aria-label="Сделать активной"
                           size="sm"
@@ -103,7 +103,7 @@ const UserCompaniesList = ({ companies = [], currentUserId, activeCompanyId, onS
                           onClick={() => handleActiveCompany(companyId)}
                           _hover={{ color: 'green.500' }}
                         >
-                          <FiCheck />
+                          <FiLogIn />
                         </IconButton>
                       </Tooltip>
                       <Tooltip content="Удалить компанию">
