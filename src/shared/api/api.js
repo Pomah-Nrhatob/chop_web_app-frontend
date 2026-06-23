@@ -15,8 +15,11 @@ const processQueue = (error, tokens = null) => {
   failedQueue = []
 }
 
+const baseURL =
+  typeof window === 'undefined' ? process.env.INTERNAL_API_URL : process.env.NEXT_PUBLIC_API_URL
+
 const baseClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+  baseURL,
 })
 
 class AuthError extends Error {
