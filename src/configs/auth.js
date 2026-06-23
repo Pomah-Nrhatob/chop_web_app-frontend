@@ -3,6 +3,8 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { REFRESH_TOKEN_BUFFER_MS } from '@/configs/data' // если используется
 
+const isProd = process.env.NODE_ENV === 'production'
+
 export const authOptions = {
   providers: [
     Credentials({
@@ -74,9 +76,8 @@ export const authOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: true,
-
-        domain: 'uchop.ru', // ✅ Раскомментируйте для IP!
+        secure: isProd,
+        ...(isProd && { domain: 'uchop.ru' }),
       },
     },
   },
@@ -86,9 +87,8 @@ export const authOptions = {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
-      secure: true,
-
-      domain: 'uchop.ru',
+      secure: isProd,
+      ...(isProd && { domain: 'uchop.ru' }),
     },
   },
   pages: {
