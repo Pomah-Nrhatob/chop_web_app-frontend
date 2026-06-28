@@ -24,6 +24,7 @@ import {
 import AddUserToCompany from '@/views/companyPage/ui/AddUserToCompany'
 import { Tooltip } from '@/components/ui/tooltip'
 import { ConfirmActionDialog } from '@/components/ui/ConfirmActionDialog'
+import SelectSecurityPositionDictionary from '@/features/dictionary/components/selectWithSearch/SelectSecurityPositionDictionary'
 
 const roleCollection = createListCollection({
   items: [
@@ -162,6 +163,15 @@ const CompanyDetails = ({ companyData, currentUserId }) => {
           )}
         </Box>
 
+        <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
+
+        <VStack align="start" w="100%">
+          <Heading mb={5} size="sm">
+            Настройки компании
+          </Heading>
+
+          <SelectSecurityPositionDictionary />
+        </VStack>
         <Box width="100%" borderBottomWidth="1px" borderBottomColor="gray.200" my={2} />
 
         <VStack align="start" w="100%" spacing={3}>

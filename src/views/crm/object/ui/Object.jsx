@@ -28,9 +28,7 @@ export default function Object() {
         </Button>
       }
     >
-      <Box mt={4}>
-        <ObjectList />
-      </Box>
+      <ObjectList />
 
       <DialogRoot open={open} onOpenChange={(e) => setOpen(e.open)} size="lg" placement="center">
         <DialogContent>

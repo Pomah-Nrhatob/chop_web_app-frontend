@@ -1,6 +1,6 @@
 'use client'
 
-import { Table } from '@chakra-ui/react'
+import { Center, Spinner, Table, Text } from '@chakra-ui/react'
 
 export const TableList = ({
   headers,
@@ -9,8 +9,16 @@ export const TableList = ({
   renderRow,
   emptyText = 'Данные не найдены',
 }) => {
+  if (isLoading && items.length === 0) {
+    return (
+      <Center minH="420px">
+        <Spinner size="lg" thickness="3px" color="blue.500" />
+      </Center>
+    )
+  }
+
   return (
-    <Table.Root size="sm" variant="outline" interactive>
+    <Table.Root size="sm" interactive>
       <Table.Header>
         <Table.Row bg="gray.50">
           {headers.map((header, index) => (
@@ -22,18 +30,12 @@ export const TableList = ({
       </Table.Header>
 
       <Table.Body>
-        {isLoading && items.length === 0 ? (
-          <Table.Row>
-            <Table.Cell colSpan={headers.length} textAlign="center" py={10} color="gray.500">
-              Загрузка данных...
-            </Table.Cell>
-          </Table.Row>
-        ) : items.length > 0 ? (
+        {items.length > 0 ? (
           items.map((item) => renderRow(item))
         ) : (
           <Table.Row>
-            <Table.Cell colSpan={headers.length} textAlign="center" py={10} color="gray.400">
-              {emptyText}
+            <Table.Cell colSpan={headers.length} textAlign="center" py={20}>
+              <Text color="gray.400">{emptyText}</Text>
             </Table.Cell>
           </Table.Row>
         )}
