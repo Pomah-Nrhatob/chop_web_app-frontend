@@ -1,58 +1,98 @@
-import { Field, Input, Textarea, Flex } from '@chakra-ui/react'
+'use client'
+
+import { DateField } from '@/components/ui/DateField'
+import { Checkbox, createListCollection, Field, Input, Select, Textarea } from '@chakra-ui/react'
+import { Controller } from 'react-hook-form'
 
 export const FormField = ({
+  placeholder = '',
   label,
   error,
   register,
   type = 'text',
   options = [],
-  children,
+  control,
+  name,
   ...props
 }) => {
-  const isTextArea = type === 'textarea'
-  const isSelect = type === 'select'
-  const isCheckbox = type === 'checkbox'
+  if (type === 'date') {
+    return (
+      <DateField
+        control={control}
+        name={name}
+        label={label}
+        error={error}
+        placeholder={placeholder}
+        {...props}
+      />
+    )
+  }
+
+  const collection = createListCollection({
+    items: options,
+  })
 
   return (
-    <Field.Root invalid={!!error} {...props}>
-      {!isCheckbox && <Field.Label>{label}</Field.Label>}
+    <Field.Root invalid={!!error}>
+      {type !== 'checkbox' && <Field.Label>{label}</Field.Label>}
 
-      {isSelect ? (
-        <select
-          {...register}
-          className="chakra-select"
-          style={{
-            padding: '8px',
-            borderRadius: '4px',
-            border: '1px solid #e2e8f0',
-            width: '100%',
-          }}
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled} hidden={opt.hidden}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      ) : isTextArea ? (
-        <Textarea {...register} {...props} />
-      ) : isCheckbox ? (
-        <Flex align="center" gap={3} p={2} bg="gray.50" borderRadius="md">
-          <input
-            type="checkbox"
-            {...register}
-            style={{ width: '20px', height: '20px' }}
-            id={props.id}
-          />
-          <label htmlFor={props.id} style={{ cursor: 'pointer', fontWeight: '500' }}>
-            {label}
-          </label>
-        </Flex>
+      {type === 'checkbox' ? (
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => (
+            <Checkbox.Root
+              checked={field.value}
+              onCheckedChange={({ checked }) => field.onChange(checked)}
+            >
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+              <Checkbox.Label>{label}</Checkbox.Label>
+            </Checkbox.Root>
+          )}
+        />
+      ) : type === 'select' ? (
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => (
+            <Select.Root
+              collection={collection}
+              value={field.value != null ? [String(field.value)] : []}
+              onValueChange={({ value }) => field.onChange(Number(value[0]))}
+            >
+              <Select.HiddenSelect name={field.name} onBlur={field.onBlur} />
+
+              <Select.Control>
+                <Select.Trigger>
+                  <Select.ValueText placeholder={placeholder} />
+                </Select.Trigger>
+
+                <Select.IndicatorGroup>
+                  <Select.Indicator />
+                </Select.IndicatorGroup>
+              </Select.Control>
+
+              <Select.Positioner>
+                <Select.Content>
+                  {collection.items.map((item) => (
+                    <Select.Item key={item.value} item={item}>
+                      {item.label}
+                      <Select.ItemIndicator />
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Positioner>
+            </Select.Root>
+          )}
+        />
+      ) : type === 'textarea' ? (
+        <Textarea placeholder={placeholder} {...register} {...props} />
       ) : (
-        <Input {...register} type={type} {...props} />
+        <Input type={type} placeholder={placeholder} {...register} {...props} />
       )}
 
-      {error && <Field.ErrorText>{error.message}</Field.ErrorText>}
+      <Field.ErrorText>{error?.message}</Field.ErrorText>
     </Field.Root>
   )
 }

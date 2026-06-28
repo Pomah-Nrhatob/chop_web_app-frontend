@@ -1,34 +1,86 @@
 import { z } from 'zod'
 
 const preprocessNumber = (val) => {
-  // 1. Если поле пустое (строка) — возвращаем undefined
-  if (val === '') return undefined
-  // 2. Если React Hook Form прислал NaN (из-за valueAsNumber) — возвращаем undefined
-  if (typeof val === 'number' && isNaN(val)) return undefined
-  // 3. В остальных случаях оставляем как есть для дальнейшей валидации
+  if (val === '' || val == null) return null
+  if (typeof val === 'number' && Number.isNaN(val)) return null
   return val
 }
 
+const preprocessDate = (val) => {
+  if (val === '' || val == null) return null
+
+  if (typeof val === 'string' || val instanceof Date) {
+    const time = new Date(val).getTime()
+
+    // Некорректная дата — оставляем NaN
+    return time
+  }
+
+  return val
+}
+
+const preprocessPhone = (val) => {
+  if (!val) return null
+
+  const digits = String(val).replace(/\D/g, '')
+
+  if (!digits) return null
+
+  return `+${digits}`
+}
+
 export const createSecuritySchema = z.object({
-  surname: z.string().min(1, 'Фамилия обязательна'),
-  name: z.string().min(1, 'Имя обязательно'),
+  surname: z.string().trim().min(1, 'Фамилия обязательна'),
+  name: z.string().trim().min(1, 'Имя обязательно'),
 
-  patronymic: z.string().optional(),
-  personality: z.string().optional(),
-  healthStatus: z.string().optional(),
-  chronicDiseases: z.string().optional(),
-
-  age: z.preprocess(
-    preprocessNumber,
-    z.coerce.number().int().min(0, 'Минимум 0 лет').max(100).optional()
+  patronymic: z.string().nullish(),
+  phoneNumber: z.preprocess(
+    preprocessPhone,
+    z
+      .string()
+      .regex(/^\+7\d{10}$/, 'Введите полный номер телефона')
+      .nullish()
   ),
 
-  shiftSalary: z.preprocess(
-    preprocessNumber,
-    z.coerce.number().min(0, 'Зарплата не может быть отрицательной').optional()
+  personality: z.string().nullish(),
+  healthStatus: z.string().nullish(),
+  chronicDiseases: z.string().nullish(),
+
+  shiftSalary: z.preprocess(preprocessNumber, z.number().min(0).nullish()),
+
+  statusId: z.preprocess(preprocessNumber, z.number().int().nullish()),
+
+  positionId: z.preprocess(preprocessNumber, z.number().int().nullish()),
+
+  birthDate: z.preprocess(
+    preprocessDate,
+    z
+      .number()
+      .refine((v) => !Number.isNaN(v), {
+        message: 'Введите корректную дату',
+      })
+      .nullish()
   ),
 
-  statusId: z.preprocess(preprocessNumber, z.coerce.number().int().optional()),
+  hireDate: z.preprocess(
+    preprocessDate,
+    z
+      .number()
+      .refine((v) => !Number.isNaN(v), {
+        message: 'Введите корректную дату',
+      })
+      .nullish()
+  ),
 
-  hasLicense: z.boolean().default(false),
+  dismissalDate: z.preprocess(
+    preprocessDate,
+    z
+      .number()
+      .refine((v) => !Number.isNaN(v), {
+        message: 'Введите корректную дату',
+      })
+      .nullish()
+  ),
+
+  hasLicense: z.boolean(),
 })
