@@ -31,14 +31,14 @@ export const Header = () => {
           <Box display="flex" alignItems="center" gap="5">
             {/* ✅ Показываем кнопку только НЕ на /bc страницах */}
             {showCrmButton && (
-              <Button variant="ghost" rounded="md">
-                <Link href="/bc">
+              <Link href="/bc">
+                <Button variant="ghost" rounded="md">
                   <Flex align="center" gap={2}>
                     <FaBusinessTime color="gray" />
                     <Text>Crm система</Text>
                   </Flex>
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             )}
 
             {!isLoading ? (

@@ -16,8 +16,6 @@ const defaultValues = {
 
   phoneNumber: '',
 
-  // age: undefined,
-
   birthDate: undefined,
   hireDate: undefined,
   dismissalDate: undefined,
@@ -31,6 +29,7 @@ const defaultValues = {
   shiftSalary: undefined,
   statusId: 1,
   positionId: undefined,
+  objectId: undefined,
 }
 
 export const useSecurityForm = (onSuccess, initialData) => {

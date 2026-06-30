@@ -89,7 +89,19 @@ export const FormField = ({
       ) : type === 'textarea' ? (
         <Textarea placeholder={placeholder} {...register} {...props} />
       ) : (
-        <Input type={type} placeholder={placeholder} {...register} {...props} />
+        <Input
+          css={{
+            '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+              WebkitAppearance: 'none',
+              margin: 0,
+            },
+            MozAppearance: 'textfield',
+          }}
+          type={type}
+          placeholder={placeholder}
+          {...register}
+          {...props}
+        />
       )}
 
       <Field.ErrorText>{error?.message}</Field.ErrorText>

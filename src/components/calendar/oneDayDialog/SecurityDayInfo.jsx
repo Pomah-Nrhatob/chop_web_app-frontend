@@ -33,6 +33,7 @@ const SecurityDayInfo = memo(function SecurityDayInfo({
   updateWorkday,
   isNewWorkday = false,
   isEdited = false,
+  objectId,
 }) {
   const { data: securities = [] } = useGetDictionarySecurities()
 
@@ -154,6 +155,7 @@ const SecurityDayInfo = memo(function SecurityDayInfo({
             {isNewWorkday ? (
               <Box maxW={{ base: '70%', md: '320px' }}>
                 <SelectSecurity
+                  objectId={objectId ? objectId : null}
                   title={null}
                   multiple={false}
                   value={worker.securityId ? [worker.securityId] : []}

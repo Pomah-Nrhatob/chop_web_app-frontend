@@ -10,8 +10,6 @@ import { FiChevronDown } from 'react-icons/fi'
 export function SelectActiveCompany({ companies = [], activeCompany }) {
   const validCompanies = (companies || []).filter((c) => c?.id && typeof c.id === 'string')
 
-  console.log(activeCompany)
-
   const router = useRouter()
 
   const initialValue = validCompanies.length > 0 ? activeCompany : null

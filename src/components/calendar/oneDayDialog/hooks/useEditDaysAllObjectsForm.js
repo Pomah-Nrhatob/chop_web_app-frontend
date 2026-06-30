@@ -144,6 +144,31 @@ export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
     resetForm({ updatedWorkdays: [] })
   }
 
+  // Проставить поле сразу всем сменам
+  const updateAllWorkdays = (workdays, field, value = true) => {
+    const currentUpdated = getValues('updatedWorkdays') || []
+
+    const updatedMap = new Map(currentUpdated.map((item) => [item.id, item]))
+
+    workdays.forEach((workday) => {
+      updatedMap.set(workday.id, {
+        ...updatedMap.get(workday.id),
+        id: workday.id,
+        [field]: value,
+      })
+    })
+
+    setValue('updatedWorkdays', Array.from(updatedMap.values()))
+  }
+
+  const startAllWorkdays = (workdays) => {
+    updateAllWorkdays(workdays, 'isStarted')
+  }
+
+  const finishAllWorkdays = (workdays) => {
+    updateAllWorkdays(workdays, 'isFinished')
+  }
+
   return {
     register,
     handleSubmit: (onValid) =>
@@ -163,5 +188,7 @@ export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
     getUpdatedWorkday,
     isProcessing,
     clearUpdateForm,
+    startAllWorkdays,
+    finishAllWorkdays,
   }
 }

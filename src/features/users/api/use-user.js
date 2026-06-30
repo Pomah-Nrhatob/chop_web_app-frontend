@@ -1,6 +1,7 @@
 import { ONE_COMPANY_QUERY_KEY } from '@/features/company/api/use-company'
 import { DICTIONARY_OBJECTS_KEY } from '@/features/dictionary/api/use-get-dictionary-objects'
 import { DICTIONARY_SECURITIES_KEY } from '@/features/dictionary/api/use-get-dictionary-securities'
+import { DICTIONARY_SECURITY_POSITION_KEY } from '@/features/dictionary/api/use-get-dictionary-securityPosition'
 import { useDictionaryCacheReset } from '@/features/dictionary/hooks/useDictionaryCacheReset'
 import { toaster } from '@/providers/chakraProvider/toaster'
 import { userApi } from '@/shared/api/user/user-api'
@@ -47,7 +48,11 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
     onSuccess: async () => {
       await refreshUser()
 
-      resetDictionaryCache([DICTIONARY_OBJECTS_KEY, DICTIONARY_SECURITIES_KEY])
+      resetDictionaryCache([
+        DICTIONARY_OBJECTS_KEY,
+        DICTIONARY_SECURITIES_KEY,
+        DICTIONARY_SECURITY_POSITION_KEY,
+      ])
 
       queryClient.invalidateQueries({
         predicate: (query) => {
@@ -58,6 +63,7 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
             key === 'calendar-allObjects' ||
             key === 'calendar-oneDay' ||
             key === 'dictionary-securities' ||
+            key === 'dictionary-securityPosition' ||
             key === 'dictionary-objects' ||
             key === 'objects' ||
             key === 'securities' ||
