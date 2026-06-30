@@ -6,20 +6,13 @@ import { Controller } from 'react-hook-form'
 import PhoneField from '@/components/ui/PhoneField'
 import { useEffect } from 'react'
 import SelectSecurityPositions from '@/features/dictionary/components/selectWithSearch/SelectSecurityPosition'
+import SelectOneObject from '@/features/dictionary/components/selectWithSearch/SelectOneObject'
+import SelectObject from '@/features/dictionary/components/selectWithSearch/SelectObject'
 
 export default function SecurityForm({ onSuccess, initialData, form }) {
   const { isLoading, register, handleSubmit, errors, onSubmit, isEditing, control, watch } = form
 
   const statusId = watch('statusId')
-
-  // useEffect(() => {
-  //   if (statusId !== 3) {
-  //     setValue('dismissalDate', null, {
-  //       shouldDirty: true,
-  //       shouldValidate: true,
-  //     })
-  //   }
-  // }, [statusId, setValue])
 
   return (
     <form id="security-form" onSubmit={handleSubmit(onSubmit)}>
@@ -148,6 +141,22 @@ export default function SecurityForm({ onSuccess, initialData, form }) {
                   disabled={isLoading}
                 />
               )}
+            />
+
+            <Controller
+              name="objectId"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <SelectObject
+                    helpText="Выберите объект, к которому будет привязан сотрудник"
+                    value={field.value}
+                    onChange={field.onChange}
+                    name={field.name}
+                    disabled={isLoading}
+                  />
+                )
+              }}
             />
 
             <FormField

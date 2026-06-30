@@ -64,7 +64,7 @@ export default function SelectSecurityPositions({ value, onChange, error, isDisa
 
         <Portal>
           <Combobox.Positioner>
-            <Combobox.Content>
+            <Combobox.Content maxH="340px" overflowY="auto">
               <Combobox.ItemGroup>
                 <Combobox.ItemGroupLabel>Должности</Combobox.ItemGroupLabel>
 

@@ -2,7 +2,7 @@ import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dicti
 import { CloseButton, Combobox, createListCollection, Portal, Text } from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
 
-export default function SelectObject({ value, onChange, error, isDisabled }) {
+export default function SelectObject({ value, onChange, error, isDisabled, helpText }) {
   const [searchValue, setSearchValue] = useState('')
   const { data: objects = [], isLoading } = useGetDictionaryObjects()
 
@@ -42,9 +42,15 @@ export default function SelectObject({ value, onChange, error, isDisabled }) {
         invalid={!!error}
         disabled={isDisabled}
       >
-        <Combobox.Label>Выбор объекта</Combobox.Label>
+        <Text fontWeight="medium">Выбор объекта</Text>
+        {helpText && (
+          <Text fontSize={10} color="red.500">
+            {helpText}
+          </Text>
+        )}
         <Combobox.Control>
           <Combobox.Input placeholder="Выберите объект" />
+
           <Combobox.IndicatorGroup gap="0.5" alignItems="center">
             {value && !isDisabled && (
               <CloseButton
@@ -63,7 +69,7 @@ export default function SelectObject({ value, onChange, error, isDisabled }) {
 
         <Portal>
           <Combobox.Positioner>
-            <Combobox.Content>
+            <Combobox.Content maxH="340px" overflowY="auto">
               <Combobox.ItemGroup>
                 <Combobox.ItemGroupLabel>Объекты</Combobox.ItemGroupLabel>
                 {isLoading ? (

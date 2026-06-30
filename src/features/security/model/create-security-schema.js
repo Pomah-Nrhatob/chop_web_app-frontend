@@ -50,6 +50,8 @@ export const createSecuritySchema = z.object({
 
   statusId: z.preprocess(preprocessNumber, z.number().int().nullish()),
 
+  objectId: z.preprocess(preprocessNumber, z.number().int().nullish()),
+
   positionId: z.preprocess(preprocessNumber, z.number().int().nullish()),
 
   birthDate: z.preprocess(

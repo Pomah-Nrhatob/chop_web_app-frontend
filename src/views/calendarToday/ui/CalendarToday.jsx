@@ -67,9 +67,15 @@ export default function CalendarToday() {
     isProcessing,
     watch,
     clearUpdateForm,
+    startAllWorkdays,
+    finishAllWorkdays,
   } = useEditDaysAllObjectsForm(null, () => {
     resetForm()
   })
+
+  const allSecurityWorkdays = useMemo(() => {
+    return objects.flatMap((object) => object.days?.[0]?.workday?.securityWorkdays ?? [])
+  }, [objects])
 
   const updatedWorkdays = useWatch({ name: 'updatedWorkdays', control }) || []
 
@@ -103,7 +109,41 @@ export default function CalendarToday() {
           as="form"
           onSubmit={handleSubmit(onSubmit)}
         >
+          <Box p={4} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="lg">
+            <Flex
+              direction={{ base: 'column', md: 'row' }}
+              align={{ base: 'stretch', md: 'center' }}
+              justify="space-between"
+              gap={3}
+            >
+              <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+                Массовые действия
+              </Text>
+
+              <Flex gap={2} wrap="wrap">
+                <Button
+                  size="sm"
+                  colorPalette="green"
+                  variant="outline"
+                  onClick={() => startAllWorkdays(allSecurityWorkdays)}
+                >
+                  Начать всем
+                </Button>
+
+                <Button
+                  size="sm"
+                  colorPalette="orange"
+                  variant="outline"
+                  onClick={() => finishAllWorkdays(allSecurityWorkdays)}
+                >
+                  Завершить всем
+                </Button>
+              </Flex>
+            </Flex>
+          </Box>
           <SelectYearMonthDay refetch={refetch} />
+
+          {/* Панель массовых действий */}
 
           <Box>
             {/* ✅ КОНТЕЙНЕР СО СКРОЛЛОМ + STICKY ЗАГОЛОВКИ */}

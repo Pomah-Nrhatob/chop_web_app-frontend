@@ -12,8 +12,11 @@ import {
   LuUser,
 } from 'react-icons/lu'
 
+import { FaRegBuilding } from 'react-icons/fa'
+
 import { InfoRow, InfoSection } from '@/components/ui/InfoCard'
 import { useGetDictionarySecurityPosition } from '@/features/dictionary/api/use-get-dictionary-securityPosition'
+import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
 
 const formatDate = (value) => {
   if (!value) return '—'
@@ -41,7 +44,26 @@ export const SecurityDetails = ({ security }) => {
     return `${age} лет`
   }
 
-  const { data: positions = [], isLoading } = useGetDictionarySecurityPosition()
+  const { data: positions = [] } = useGetDictionarySecurityPosition()
+  const { data: objects = [] } = useGetDictionaryObjects()
+
+  const formatPhoneNumber = (phone) => {
+    if (!phone) return '—'
+
+    const digits = phone.replace(/\D/g, '')
+
+    // +7XXXXXXXXXX или 7XXXXXXXXXX
+    if (digits.length === 11 && digits.startsWith('7')) {
+      return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`
+    }
+
+    // 8XXXXXXXXXX -> +7
+    if (digits.length === 11 && digits.startsWith('8')) {
+      return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`
+    }
+
+    return phone
+  }
 
   if (!security) return null
 
@@ -60,13 +82,23 @@ export const SecurityDetails = ({ security }) => {
       <Separator />
 
       <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
-        <InfoRow icon={LuPhone} label="Телефон" value={security.phoneNumber} />
+        <InfoRow icon={LuPhone} label="Телефон" value={formatPhoneNumber(security.phoneNumber)} />
 
         <InfoRow
           icon={LuBriefcase}
           label="Должность"
           value={
-            security.positionId ? positions.find((el) => el.id === security.positionId).name : '—'
+            security.positionId ? positions.find((el) => el.id === security.positionId)?.name : '—'
+          }
+        />
+
+        <InfoRow
+          icon={FaRegBuilding}
+          label="Объект"
+          value={
+            security.objectId
+              ? (objects?.find((el) => el.id === security.objectId)?.title ?? '—')
+              : '—'
           }
         />
 

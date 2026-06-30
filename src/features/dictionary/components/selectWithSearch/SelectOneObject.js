@@ -63,7 +63,7 @@ export default function SelectOneObject({ value, onChange, error, isDisabled }) 
 
         <Portal>
           <SelectPositioner>
-            <SelectContent>
+            <SelectContent maxH="340px" overflowY="auto">
               {isLoading ? (
                 <Text px={4} py={2}>
                   Загрузка объектов...

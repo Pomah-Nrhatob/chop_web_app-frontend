@@ -133,6 +133,7 @@ export default function emptyDayDialog({ open, setOpen, setEmptyDayInfo, emptyDa
                   rules={{ required: 'Охранники обязательны' }}
                   render={({ field, fieldState }) => (
                     <SelectSecurity
+                      objectId={objectId}
                       label={
                         <Text fontWeight="medium" mb={2}>
                           Охранники

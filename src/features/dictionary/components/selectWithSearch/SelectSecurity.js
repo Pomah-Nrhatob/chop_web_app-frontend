@@ -11,6 +11,7 @@ export default function SelectSecurity({
   title = 'Выбор охранников',
   inputOnTop = false,
   isDisabled = false,
+  objectId,
 }) {
   const [searchValue, setSearchValue] = useState('')
   const { data: securities = [], isLoading } = useGetDictionarySecurities()
@@ -21,19 +22,39 @@ export default function SelectSecurity({
     return value.map((id) => securities.find((security) => security.id === id)).filter(Boolean)
   }, [value, securities])
 
-  const filteredItems = useMemo(
-    () =>
-      securities
-        .filter(
-          (item) =>
-            item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-            item.surname.toLowerCase().includes(searchValue.toLowerCase())
-        )
-        // Для multiple: исключаем уже выбранные из списка
-        // Для single: показываем все (можно сменить выбор на другого)
-        .filter((item) => !multiple || !value.includes(item.id)),
-    [securities, searchValue, value, multiple]
-  )
+  const filteredItems = useMemo(() => {
+    return securities
+      .filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item.surname.toLowerCase().includes(searchValue.toLowerCase())
+      )
+      .filter((item) => !multiple || !value.includes(item.id))
+  }, [securities, searchValue, value, multiple])
+
+  const sortByStatus = (items) =>
+    [...items].sort((a, b) => {
+      const aDismissed = a.statusId === 3
+      const bDismissed = b.statusId === 3
+
+      if (aDismissed === bDismissed) return 0
+
+      return aDismissed ? 1 : -1
+    })
+
+  const priorityItems = useMemo(() => {
+    if (!objectId) return []
+
+    return sortByStatus(filteredItems.filter((item) => item.objectId === objectId))
+  }, [filteredItems, objectId])
+
+  const otherItems = useMemo(() => {
+    if (!objectId) {
+      return sortByStatus(filteredItems)
+    }
+
+    return sortByStatus(filteredItems.filter((item) => item.objectId !== objectId))
+  }, [filteredItems, objectId])
 
   const collection = useMemo(
     () =>
@@ -105,20 +126,56 @@ export default function SelectSecurity({
           </Combobox.Control>
           <Portal>
             <Combobox.Positioner>
-              <Combobox.Content>
+              <Combobox.Content maxH="340px" overflowY="auto">
                 <Combobox.ItemGroup>
                   <Combobox.ItemGroupLabel>Охранники</Combobox.ItemGroupLabel>
+
                   {isLoading ? (
                     <Text px={4} py={2}>
                       Загрузка...
                     </Text>
                   ) : filteredItems.length ? (
-                    filteredItems.map((item) => (
-                      <Combobox.Item key={item.id} item={item}>
-                        {item.name} {item.surname}
-                        <Combobox.ItemIndicator />
-                      </Combobox.Item>
-                    ))
+                    <>
+                      {priorityItems.map((item) => (
+                        <Combobox.Item key={item.id} item={item}>
+                          <Flex justify="space-between" align="center" w="full">
+                            <Text>
+                              {item.name} {item.surname}
+                            </Text>
+
+                            {item.statusId === 3 && (
+                              <Tag.Root size="sm" colorPalette="red">
+                                <Tag.Label>Уволен</Tag.Label>
+                              </Tag.Root>
+                            )}
+                          </Flex>
+
+                          <Combobox.ItemIndicator />
+                        </Combobox.Item>
+                      ))}
+
+                      {objectId && priorityItems.length > 0 && otherItems.length > 0 && (
+                        <Box borderTopWidth="1px" borderColor="gray.200" my={2} />
+                      )}
+
+                      {otherItems.map((item) => (
+                        <Combobox.Item key={item.id} item={item}>
+                          <Flex justify="space-between" align="center" w="full">
+                            <Text>
+                              {item.name} {item.surname}
+                            </Text>
+
+                            {item.statusId === 3 && (
+                              <Tag.Root size="sm" colorPalette="red">
+                                <Tag.Label>Уволен</Tag.Label>
+                              </Tag.Root>
+                            )}
+                          </Flex>
+
+                          <Combobox.ItemIndicator />
+                        </Combobox.Item>
+                      ))}
+                    </>
                   ) : (
                     <Combobox.Empty>Охранники не найдены</Combobox.Empty>
                   )}
