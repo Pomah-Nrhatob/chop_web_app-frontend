@@ -18,7 +18,8 @@ export const useGetCalendarSecurityWorkdays = ({ securityId, year, month }) => {
         // Так как в useQuery писать onError нельзя, перехватываем ошибку здесь
         toaster.create({
           title: 'Ошибка загрузки',
-          description: err.response?.data?.message || 'Не удалось загрузить календарь',
+          description:
+            err.response?.data?.message || err?.message || 'Не удалось загрузить календарь',
           type: 'error',
         })
         throw err // Обязательно пробрасываем ошибку дальше для TanStack Query

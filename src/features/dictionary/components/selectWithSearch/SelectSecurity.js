@@ -1,5 +1,14 @@
 import { useGetDictionarySecurities } from '@/features/dictionary/api/use-get-dictionary-securities'
-import { Combobox, createListCollection, Portal, Text, Tag, Flex, Box } from '@chakra-ui/react'
+import {
+  Combobox,
+  createListCollection,
+  Portal,
+  Text,
+  Tag,
+  Flex,
+  Box,
+  Spinner,
+} from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
 
 export default function SelectSecurity({
@@ -63,7 +72,7 @@ export default function SelectSecurity({
         itemToString: (item) => `${item.name} ${item.surname}`,
         itemToValue: (item) => item.id,
       }),
-    [filteredItems]
+    [filteredItems, securities]
   )
 
   const handleRemove = (idToRemove) => {
@@ -73,6 +82,10 @@ export default function SelectSecurity({
   const handleValueChange = (details) => {
     // details.value — массив ID (даже для single-select!)
     onChange(details.value)
+  }
+
+  if (isLoading) {
+    return <Spinner />
   }
 
   return (

@@ -22,7 +22,7 @@ export const useResetPassword = () => {
     onError: (err) => {
       toaster.create({
         title: 'Ошибка',
-        description: err.response?.data?.message || err.message || 'Ошибка сброса пароля',
+        description: err.response?.data?.message || err?.message || 'Ошибка сброса пароля',
         type: 'error',
       })
     },

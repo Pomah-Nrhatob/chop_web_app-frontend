@@ -20,5 +20,13 @@ export const useUpdateSecurity = () => {
         type: 'success',
       })
     },
+    onError: (err) => {
+      toaster.create({
+        title: 'Ошибка',
+        description:
+          err.response?.data?.message || err?.message || 'Не удалось обновить данные сотрудника',
+        type: 'error',
+      })
+    },
   })
 }

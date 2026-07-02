@@ -30,6 +30,7 @@ import SecurityCalendarGrid from './SecurityCalendarGrid'
 import SecurityCalendarActionBar from './SecurityCalendarActionBar'
 import SecurityReportGenerator from '@/widgets/report-generator/ui/SecurityReportGenerator'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
+import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
 
 export default function SecurityCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -221,79 +222,81 @@ export default function SecurityCalendar() {
           !isError && <SecurityReportGenerator itemId={securityId} year={year} month={month} />
         }
       >
-        {isPageLoading ? (
-          <Flex
-            minH="320px"
-            align="center"
-            justify="center"
-            bg="white"
-            borderRadius="xl"
-            shadow="sm"
-          >
-            <Spinner size="lg" color="blue.500" thickness="3px" />
-          </Flex>
-        ) : isError ? (
-          <Flex
-            minH="320px"
-            align="center"
-            justify="center"
-            bg="white"
-            borderRadius="xl"
-            shadow="sm"
-            color="red.500"
-          >
-            <Text>Ошибка загрузки данных с сервера</Text>
-          </Flex>
-        ) : (
-          <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-            {isListOpen && <SecurityList />}
+        <NoActiveCompany>
+          {isPageLoading ? (
+            <Flex
+              minH="320px"
+              align="center"
+              justify="center"
+              bg="white"
+              borderRadius="xl"
+              shadow="sm"
+            >
+              <Spinner size="lg" color="blue.500" thickness="3px" />
+            </Flex>
+          ) : isError ? (
+            <Flex
+              minH="320px"
+              align="center"
+              justify="center"
+              bg="white"
+              borderRadius="xl"
+              shadow="sm"
+              color="red.500"
+            >
+              <Text>Ошибка загрузки данных с сервера</Text>
+            </Flex>
+          ) : (
+            <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+              {isListOpen && <SecurityList />}
 
-            <SecurityCalendarHeader
-              securityId={securityId}
-              month={month}
-              year={year}
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-              calendarDays={calendarDays}
-              monthStart={monthStart}
-              selectedDates={selectedDates}
-              setSelectedDates={setSelectedDates}
-              calendarMode={calendarMode}
-              setCalendarMode={setCalendarMode}
-              shifts={shifts}
-              objectsDictionary={objectsDictionary}
-              onMonthChange={handleMonthChange}
-              onYearChange={handleYearChange}
-              onModeChange={handleModeChange}
-              onSelectAllDays={selectAllDays}
-              onSelectEmptyDays={selectDaysWithoutShifts}
-            />
+              <SecurityCalendarHeader
+                securityId={securityId}
+                month={month}
+                year={year}
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                calendarDays={calendarDays}
+                monthStart={monthStart}
+                selectedDates={selectedDates}
+                setSelectedDates={setSelectedDates}
+                calendarMode={calendarMode}
+                setCalendarMode={setCalendarMode}
+                shifts={shifts}
+                objectsDictionary={objectsDictionary}
+                onMonthChange={handleMonthChange}
+                onYearChange={handleYearChange}
+                onModeChange={handleModeChange}
+                onSelectAllDays={selectAllDays}
+                onSelectEmptyDays={selectDaysWithoutShifts}
+              />
 
-            <SecurityCalendarGrid
-              calendarDays={calendarDays}
-              monthStart={monthStart}
-              shifts={shifts}
-              selectedDates={selectedDates}
-              calendarMode={calendarMode}
-              expandedCells={expandedCells}
-              onCellClick={handleDayCellClick}
-              onShiftClick={handleShiftClick}
-              onToggleExpand={(dayKey) =>
-                setExpandedCells((prev) => ({
-                  ...prev,
-                  [dayKey]: !prev[dayKey],
-                }))
-              }
-              objectsDictionary={objectsDictionary}
-            />
+              <SecurityCalendarGrid
+                calendarDays={calendarDays}
+                monthStart={monthStart}
+                shifts={shifts}
+                selectedDates={selectedDates}
+                calendarMode={calendarMode}
+                expandedCells={expandedCells}
+                onCellClick={handleDayCellClick}
+                onShiftClick={handleShiftClick}
+                onToggleExpand={(dayKey) =>
+                  setExpandedCells((prev) => ({
+                    ...prev,
+                    [dayKey]: !prev[dayKey],
+                  }))
+                }
+                objectsDictionary={objectsDictionary}
+              />
 
-            <SecurityCalendarActionBar
-              selectedDates={selectedDates}
-              onAssign={handleOpenCreateDialog}
-              onClear={() => setSelectedDates([])}
-            />
-          </VStack>
-        )}
+              <SecurityCalendarActionBar
+                selectedDates={selectedDates}
+                onAssign={handleOpenCreateDialog}
+                onClear={() => setSelectedDates([])}
+              />
+            </VStack>
+          )}
+        </NoActiveCompany>
       </ContainerForPage>
     </>
   )

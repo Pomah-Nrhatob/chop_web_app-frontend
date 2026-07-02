@@ -27,7 +27,7 @@ export const usePostObject = () => {
       console.log(err)
       toaster.create({
         title: 'Ошибка',
-        description: err.response?.data?.message,
+        description: err.response?.data?.message || err?.message,
         type: 'error',
       })
     },

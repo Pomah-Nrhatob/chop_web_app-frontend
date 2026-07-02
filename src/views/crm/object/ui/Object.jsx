@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import { FiPlus } from 'react-icons/fi'
+import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
 
 export default function Object() {
   const [open, setOpen] = useState(false)
@@ -28,21 +29,23 @@ export default function Object() {
         </Button>
       }
     >
-      <ObjectList />
+      <NoActiveCompany>
+        <ObjectList />
 
-      <DialogRoot open={open} onOpenChange={(e) => setOpen(e.open)} size="lg" placement="center">
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Регистрация нового объекта</DialogTitle>
-          </DialogHeader>
+        <DialogRoot open={open} onOpenChange={(e) => setOpen(e.open)} size="lg" placement="center">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Регистрация нового объекта</DialogTitle>
+            </DialogHeader>
 
-          <DialogBody pb={6}>
-            <ObjectForm onSuccess={() => setOpen(false)} />
-          </DialogBody>
+            <DialogBody pb={6}>
+              <ObjectForm onSuccess={() => setOpen(false)} />
+            </DialogBody>
 
-          <DialogCloseTrigger />
-        </DialogContent>
-      </DialogRoot>
+            <DialogCloseTrigger />
+          </DialogContent>
+        </DialogRoot>
+      </NoActiveCompany>
     </ContainerForPage>
   )
 }

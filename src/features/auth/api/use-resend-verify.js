@@ -21,7 +21,7 @@ export const useResendVerify = () => {
       toaster.create({
         title: 'Ошибка',
         description:
-          err.response?.data?.message || err.message || 'Ошибка отправки письма подтверждения',
+          err.response?.data?.message || err?.message || 'Ошибка отправки письма подтверждения',
         type: 'error',
       })
     },
