@@ -23,7 +23,7 @@ export const usePostSecurity = () => {
     onError: (err) => {
       toaster.create({
         title: 'Ошибка',
-        description: err.response?.data?.message,
+        description: err.response?.data?.message || err?.message,
         type: 'error',
       })
     },

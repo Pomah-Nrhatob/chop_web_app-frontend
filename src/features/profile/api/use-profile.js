@@ -33,7 +33,7 @@ export const useUpdateProfile = () => {
     onError: (err) => {
       toaster.create({
         title: 'Ошибка',
-        description: err.response?.data?.message || 'Не удалось обновить профиль',
+        description: err.response?.data?.message || err?.message || 'Не удалось обновить профиль',
         type: 'error',
       })
     },

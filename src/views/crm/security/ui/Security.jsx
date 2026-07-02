@@ -7,6 +7,7 @@ import SecurityList from './SecurityList'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import { FiPlus } from 'react-icons/fi'
 import SecurityDialog from '@/views/crm/security/ui/SecurityDialog'
+import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
 
 export default function Security() {
   const [open, setOpen] = useState(false)
@@ -21,9 +22,11 @@ export default function Security() {
         </Button>
       }
     >
-      <SecurityList />
+      <NoActiveCompany>
+        <SecurityList />
 
-      <SecurityDialog open={open} onClose={() => setOpen(false)} />
+        <SecurityDialog open={open} onClose={() => setOpen(false)} />
+      </NoActiveCompany>
     </ContainerForPage>
   )
 }

@@ -30,6 +30,7 @@ import CalendarGrid from './CalendarGrid'
 import CalendarActionBar from './CalendarActionBar'
 import ObjectReportGenerator from '@/widgets/report-generator/ui/ObjectReportGenerator'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
+import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
 
 export default function ObjectCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -199,80 +200,82 @@ export default function ObjectCalendar() {
           )
         }
       >
-        {isPageLoading ? (
-          <Flex
-            minH="320px"
-            align="center"
-            justify="center"
-            bg="white"
-            borderRadius="xl"
-            shadow="sm"
-          >
-            <Spinner size="lg" color="blue.500" thickness="3px" />
-          </Flex>
-        ) : isError ? (
-          <Flex
-            minH="320px"
-            align="center"
-            justify="center"
-            bg="white"
-            borderRadius="xl"
-            shadow="sm"
-            color="red.500"
-          >
-            <Text>Ошибка загрузки данных с сервера</Text>
-          </Flex>
-        ) : (
-          <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-            <Button
-              variant="ghost"
-              justifyContent="space-between"
-              onClick={() => setIsListOpen((prev) => !prev)}
+        <NoActiveCompany>
+          {isPageLoading ? (
+            <Flex
+              minH="320px"
+              align="center"
+              justify="center"
+              bg="white"
+              borderRadius="xl"
+              shadow="sm"
             >
-              {isListOpen ? 'Скрыть список объектов' : 'Открыть список объектов'}
-              {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
-            </Button>
+              <Spinner size="lg" color="blue.500" thickness="3px" />
+            </Flex>
+          ) : isError ? (
+            <Flex
+              minH="320px"
+              align="center"
+              justify="center"
+              bg="white"
+              borderRadius="xl"
+              shadow="sm"
+              color="red.500"
+            >
+              <Text>Ошибка загрузки данных с сервера</Text>
+            </Flex>
+          ) : (
+            <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+              <Button
+                variant="ghost"
+                justifyContent="space-between"
+                onClick={() => setIsListOpen((prev) => !prev)}
+              >
+                {isListOpen ? 'Скрыть список объектов' : 'Открыть список объектов'}
+                {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
+              </Button>
 
-            {isListOpen && <ObjectList />}
+              {isListOpen && <ObjectList />}
 
-            <CalendarHeader
-              objectTitle={stableTitle}
-              currentMonth={currentMonth}
-              year={year}
-              month={month}
-              calendarMode={calendarMode}
-              isListOpen={isListOpen}
-              onToggleList={() => setIsListOpen((prev) => !prev)}
-              onDateChange={handleDateChange}
-              onModeChange={handleModeChange}
-              onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              onToday={() => setCurrentMonth(new Date())}
-              onSelectAllDays={selectAllDays}
-              onSelectEmptyDays={selectDaysWithoutShifts}
-            />
+              <CalendarHeader
+                objectTitle={stableTitle}
+                currentMonth={currentMonth}
+                year={year}
+                month={month}
+                calendarMode={calendarMode}
+                isListOpen={isListOpen}
+                onToggleList={() => setIsListOpen((prev) => !prev)}
+                onDateChange={handleDateChange}
+                onModeChange={handleModeChange}
+                onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                onToday={() => setCurrentMonth(new Date())}
+                onSelectAllDays={selectAllDays}
+                onSelectEmptyDays={selectDaysWithoutShifts}
+              />
 
-            <CalendarGrid
-              calendarDays={calendarDays}
-              monthStart={monthStart}
-              shifts={shifts}
-              selectedDates={selectedDates}
-              isToday={(day) => isSameDay(day, new Date())}
-              calendarMode={calendarMode}
-              expandedCells={expandedCells}
-              onCellClick={handleDayCellClick}
-              onShiftClick={handleShiftClick}
-              onToggleExpand={handleToggleExpand}
-              objectsDictionary={objectsDictionary}
-            />
+              <CalendarGrid
+                calendarDays={calendarDays}
+                monthStart={monthStart}
+                shifts={shifts}
+                selectedDates={selectedDates}
+                isToday={(day) => isSameDay(day, new Date())}
+                calendarMode={calendarMode}
+                expandedCells={expandedCells}
+                onCellClick={handleDayCellClick}
+                onShiftClick={handleShiftClick}
+                onToggleExpand={handleToggleExpand}
+                objectsDictionary={objectsDictionary}
+              />
 
-            <CalendarActionBar
-              selectedDates={selectedDates}
-              onAssign={handleOpenCreateDialog}
-              onClear={() => setSelectedDates([])}
-            />
-          </VStack>
-        )}
+              <CalendarActionBar
+                selectedDates={selectedDates}
+                onAssign={handleOpenCreateDialog}
+                onClear={() => setSelectedDates([])}
+              />
+            </VStack>
+          )}
+        </NoActiveCompany>
       </ContainerForPage>
     </>
   )

@@ -1,5 +1,12 @@
 import { useGetDictionarySecurityPosition } from '@/features/dictionary/api/use-get-dictionary-securityPosition'
-import { CloseButton, Combobox, createListCollection, Portal, Text } from '@chakra-ui/react'
+import {
+  CloseButton,
+  Combobox,
+  createListCollection,
+  Portal,
+  Spinner,
+  Text,
+} from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
 
 export default function SelectSecurityPositions({ value, onChange, error, isDisabled }) {
@@ -14,16 +21,20 @@ export default function SelectSecurityPositions({ value, onChange, error, isDisa
   const collection = useMemo(
     () =>
       createListCollection({
-        items: filteredItems,
+        items: positions,
         itemToString: (item) => item.name,
         itemToValue: (item) => String(item.id),
       }),
-    [filteredItems]
+    [positions]
   )
 
   const handleClear = () => {
     onChange(null)
     setSearchValue('')
+  }
+
+  if (isLoading) {
+    return <Spinner />
   }
 
   return (

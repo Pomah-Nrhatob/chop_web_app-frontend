@@ -64,7 +64,7 @@ export default function SelectSecurity({
         itemToString: (item) => `${item.name} ${item.surname}`,
         itemToValue: (item) => item.id,
       }),
-    [filteredItems]
+    [filteredItems, securities]
   )
 
   const handleRemove = (idToRemove) => {

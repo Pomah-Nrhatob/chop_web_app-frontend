@@ -14,6 +14,7 @@ import {
   SelectItem,
   SelectItemText,
   SelectItemIndicator,
+  Spinner,
 } from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
 
@@ -35,8 +36,12 @@ export default function SelectOneObject({ value, onChange, error, isDisabled }) 
         itemToString: (item) => item.title,
         itemToValue: (item) => String(item.id),
       }),
-    [filteredItems]
+    [filteredItems, objects]
   )
+
+  if (isLoading) {
+    return <Spinner />
+  }
 
   return (
     <>
