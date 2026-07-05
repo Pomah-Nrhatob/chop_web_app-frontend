@@ -96,48 +96,48 @@ export default function CalendarToday() {
     clearUpdateForm()
   }
 
-  const containerRef = useRef(null)
+  // const containerRef = useRef(null)
 
-  const HEADER_HEIGHT = 70
+  // const HEADER_HEIGHT = 70
 
-  const handleScroll = () => {
-    let current = null
-    let minTop = Infinity
+  // const handleScroll = () => {
+  //   let current = null
+  //   let minTop = Infinity
 
-    Object.entries(itemRefs.current).forEach(([id, el]) => {
-      if (!el) return
+  //   Object.entries(itemRefs.current).forEach(([id, el]) => {
+  //     if (!el) return
 
-      const top = el.getBoundingClientRect().top
+  //     const top = el.getBoundingClientRect().top
 
-      // первый элемент ниже sticky header
-      if (top >= HEADER_HEIGHT && top < minTop) {
-        minTop = top
-        current = Number(id)
-      }
-    })
+  //     // первый элемент ниже sticky header
+  //     if (top >= HEADER_HEIGHT && top < minTop) {
+  //       minTop = top
+  //       current = Number(id)
+  //     }
+  //   })
 
-    setCurrentId(current)
-  }
+  //   setCurrentId(current)
+  // }
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setCurrentId(Number(entry.target.dataset.id))
-          }
-        })
-      },
-      {
-        rootMargin: '-70px 0px -90% 0px',
-        threshold: 0,
-      }
-    )
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       entries.forEach((entry) => {
+  //         if (entry.isIntersecting) {
+  //           setCurrentId(Number(entry.target.dataset.id))
+  //         }
+  //       })
+  //     },
+  //     {
+  //       rootMargin: '-70px 0px -90% 0px',
+  //       threshold: 0,
+  //     }
+  //   )
 
-    Object.values(itemRefs.current).forEach((el) => observer.observe(el))
+  //   Object.values(itemRefs.current).forEach((el) => observer.observe(el))
 
-    return () => observer.disconnect()
-  }, [objects])
+  //   return () => observer.disconnect()
+  // }, [objects])
 
   return (
     <>
@@ -197,10 +197,10 @@ export default function CalendarToday() {
             <Box>
               {/* ✅ КОНТЕЙНЕР СО СКРОЛЛОМ + STICKY ЗАГОЛОВКИ */}
               <Box
-                ref={containerRef}
+                // ref={containerRef}
                 // overflowY="auto"
                 // h="calc(100vh - 250px)"
-                onScroll={handleScroll}
+                // onScroll={handleScroll}
                 minH="350px" // 100vh минус header + пагинация
                 position="relative"
                 border="1px solid"
