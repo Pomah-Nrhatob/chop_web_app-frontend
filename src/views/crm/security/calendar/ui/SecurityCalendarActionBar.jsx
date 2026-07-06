@@ -3,7 +3,13 @@
 import { HStack, VStack, Text, Button } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-export default function SecurityCalendarActionBar({ selectedDates, onAssign, onClear }) {
+export default function SecurityCalendarActionBar({
+  selectedDates,
+  onVacation,
+  onAssign,
+  onClear,
+  isCreatingVacation = false,
+}) {
   if (selectedDates.length === 0) return null
   return (
     <HStack justify="space-between" p={4} bg="blue.900" color="white" borderRadius="lg">
@@ -21,6 +27,9 @@ export default function SecurityCalendarActionBar({ selectedDates, onAssign, onC
       <HStack>
         <Button colorScheme="blue" size="md" onClick={onAssign}>
           Назначить смену
+        </Button>
+        <Button loading={isCreatingVacation} colorScheme="orange" size="md" onClick={onVacation}>
+          В отпуск
         </Button>
         <Button
           bg="white"

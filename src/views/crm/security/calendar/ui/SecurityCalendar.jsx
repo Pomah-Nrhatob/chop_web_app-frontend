@@ -31,6 +31,9 @@ import SecurityCalendarActionBar from './SecurityCalendarActionBar'
 import SecurityReportGenerator from '@/widgets/report-generator/ui/SecurityReportGenerator'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
+import { useCreateVacation } from '@/features/calendar/api/use-create-vacation'
+import VacationConfirmModal from '@/components/calendar/vacationModal/VacationConfirmModal'
+import OneDayVacationDialog from '@/components/calendar/oneDayDialog/OneDayVacationDialog'
 
 export default function SecurityCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -42,9 +45,19 @@ export default function SecurityCalendar() {
   const [openEmptyDayDialog, setOpenEmptyDayDialog] = useState(false)
   const [emptyDayInfo, setEmptyDayInfo] = useState({})
   const [selectedWorkday, setSelectedWorkday] = useState(null)
+  const [openVacationDialog, setOpenVacationDialog] = useState(false)
+  const [selectedVacationWorkday, setSelectedVacationWorkday] = useState(null)
+  const [vacationConfirmData, setVacationConfirmData] = useState({
+    isOpen: false,
+    startDate: null,
+    endDate: null,
+    missingDays: [],
+  })
 
   const params = useParams()
   const securityId = Number(params.id)
+
+  const { mutate: createVacation, isPending: isCreatingVacation } = useCreateVacation()
 
   const { data: securityDictionary = [], isLoading: isSecurityDictLoading } =
     useGetDictionarySecurities()
@@ -102,6 +115,81 @@ export default function SecurityCalendar() {
 
   const isPageLoading = isSecurityDictLoading || isObjectsDictLoading || isLoading || isFetching
 
+  const formatDateForApi = (date) => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
+  const handleVacationClick = () => {
+    if (selectedDates.length === 0) return
+
+    const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime())
+    const startDate = sortedDates[0]
+    const endDate = sortedDates[sortedDates.length - 1]
+
+    const allDaysInRange = eachDayOfInterval({ start: startDate, end: endDate })
+    const selectedSet = new Set(selectedDates.map((d) => d.getTime()))
+    const missingDays = allDaysInRange.filter((d) => !selectedSet.has(d.getTime()))
+
+    if (missingDays.length > 0) {
+      setVacationConfirmData({
+        isOpen: true,
+        startDate,
+        endDate,
+        missingDays,
+      })
+    } else {
+      createVacation(
+        {
+          securityId: Number(securityId),
+          startDate: formatDateForApi(startDate),
+          endDate: formatDateForApi(endDate),
+        },
+        {
+          onSuccess: () => {
+            setSelectedDates([]) // ✅ Снимаем выделение
+          },
+        }
+      )
+    }
+  }
+
+  // В handleConfirmVacation:
+  const handleConfirmVacation = () => {
+    if (!vacationConfirmData.startDate || !vacationConfirmData.endDate) return
+
+    createVacation(
+      {
+        securityId: Number(securityId),
+        startDate: formatDateForApi(vacationConfirmData.startDate),
+        endDate: formatDateForApi(vacationConfirmData.endDate),
+      },
+      {
+        onSuccess: () => {
+          setSelectedDates([]) // ✅ Снимаем выделение
+          setVacationConfirmData({
+            isOpen: false,
+            startDate: null,
+            endDate: null,
+            missingDays: [],
+          })
+        },
+      }
+    )
+  }
+
+  // ✅ Закрытие модалки
+  const handleCloseVacationModal = () => {
+    setVacationConfirmData({
+      isOpen: false,
+      startDate: null,
+      endDate: null,
+      missingDays: [],
+    })
+  }
+
   const handleDateClick = (day) => {
     setSelectedDates((prev) => {
       const exists = prev.find((d) => isSameDay(d, day))
@@ -135,8 +223,16 @@ export default function SecurityCalendar() {
       }
 
       if (dayShifts[0]?.id) {
-        setSelectedWorkday(dayShifts[0].id)
-        setOpenOneDayDialog(true)
+        const shift = dayShifts[0]
+
+        // ✅ Определяем тип дня и открываем нужный диалог
+        if (shift.isVacation) {
+          setSelectedVacationWorkday(shift.id)
+          setOpenVacationDialog(true)
+        } else {
+          setSelectedWorkday(shift.id)
+          setOpenOneDayDialog(true)
+        }
       }
 
       return
@@ -164,8 +260,14 @@ export default function SecurityCalendar() {
 
     if (calendarMode === 'edit') return
 
-    setSelectedWorkday(shift.id)
-    setOpenOneDayDialog(true)
+    // ✅ Определяем тип дня
+    if (shift.isVacation) {
+      setSelectedVacationWorkday(shift.id)
+      setOpenVacationDialog(true)
+    } else {
+      setSelectedWorkday(shift.id)
+      setOpenOneDayDialog(true)
+    }
   }
 
   const handleOpenCreateDialog = () => {
@@ -199,6 +301,21 @@ export default function SecurityCalendar() {
 
   return (
     <>
+      <OneDayVacationDialog
+        open={openVacationDialog}
+        setOpen={setOpenVacationDialog}
+        selectedWorkday={selectedVacationWorkday}
+        setSelectedWorkday={setSelectedVacationWorkday}
+      />
+      <VacationConfirmModal
+        isOpen={vacationConfirmData.isOpen}
+        onClose={handleCloseVacationModal}
+        onConfirm={handleConfirmVacation}
+        startDate={vacationConfirmData.startDate}
+        endDate={vacationConfirmData.endDate}
+        missingDays={vacationConfirmData.missingDays}
+        isLoading={isCreatingVacation}
+      />
       <OneDaySecurityDialog
         open={openOneDayDialog}
         setOpen={setOpenOneDayDialog}
@@ -292,7 +409,9 @@ export default function SecurityCalendar() {
               <SecurityCalendarActionBar
                 selectedDates={selectedDates}
                 onAssign={handleOpenCreateDialog}
+                onVacation={handleVacationClick}
                 onClear={() => setSelectedDates([])}
+                isCreatingVacation={isCreatingVacation}
               />
             </VStack>
           )}
