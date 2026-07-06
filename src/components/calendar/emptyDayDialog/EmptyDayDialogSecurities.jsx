@@ -82,7 +82,7 @@ export default function EmptyDayDialogSecurities({
     }
     return sortedDates.map((d) => format(new Date(d), 'dd.MM')).join(', ')
   }
-  console.log(emptyDayInfo)
+
   return (
     <Dialog.Root
       initialFocusEl={null}

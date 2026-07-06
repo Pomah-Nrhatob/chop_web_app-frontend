@@ -21,6 +21,16 @@ export const securityWorkdaysApi = {
     return apiClient.post('/security-workdays/bulk', { needAuth: true, data })
   },
 
+  createVacation: async (data) => {
+    return apiClient.post('/security-workdays/create-vacation', { data, needAuth: true })
+  },
+
+  removeVacationWorkday: async (id) => {
+    return apiClient.delete(`/security-workdays/remove-vacation/${id}`, {
+      needAuth: true,
+    })
+  },
+
   updateSecurityWorkday: async (id, data) => {
     return apiClient.patch(`/security-workdays/${id}`, { needAuth: true, data })
   },
