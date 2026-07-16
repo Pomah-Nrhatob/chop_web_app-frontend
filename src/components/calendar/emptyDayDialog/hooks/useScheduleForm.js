@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 export const useScheduleForm = (initialData, onSuccess = null) => {
-  const { mutate: create, isPending: isCreating } = useCreateSchedule()
+  const { mutateAsync: create, isPending: isCreating } = useCreateSchedule()
 
   const {
     register,
@@ -25,15 +25,13 @@ export const useScheduleForm = (initialData, onSuccess = null) => {
     },
   })
 
-  const onSubmit = (formData) => {
-    const options = {
-      onSuccess: () => {
-        resetForm()
-        if (onSuccess) onSuccess()
-      },
-    }
+  const onSubmit = async (formData) => {
+    const res = await create(formData)
 
-    create(formData, options)
+    resetForm()
+    onSuccess?.()
+
+    return res
   }
 
   return {

@@ -11,12 +11,16 @@ import SecurityWorkdayForm from '@/views/calendarToday/ui/SecurityWorkdayForm'
 import SelectYearMonthDay from '@/views/calendarToday/ui/SelectYearMonthDay'
 import {
   ActionBar,
+  Alert,
   Box,
   Button,
   Flex,
   GridItem,
   Heading,
+  HStack,
+  IconButton,
   Portal,
+  Presence,
   SimpleGrid,
   Spinner,
   Text,
@@ -25,7 +29,10 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { CiSaveDown1 } from 'react-icons/ci'
-import { MdOutlineCancel } from 'react-icons/md'
+import { LuCircleCheck, LuPlay } from 'react-icons/lu'
+import { MdEdit, MdOutlineCancel } from 'react-icons/md'
+
+const ACTIVE_LINE = 220
 
 const getFormattedDate = (day, month, year) => {
   const date = new Date(year, month - 1, day)
@@ -53,7 +60,51 @@ const getFormattedDate = (day, month, year) => {
 export default function CalendarToday() {
   const itemRefs = useRef({})
 
+  const scrollRef = useRef(null)
+  const isProgrammaticScroll = useRef(false)
+
+  const badgesRef = useRef(null)
+  const activeBadgeRef = useRef(null)
+
   const [currentId, setCurrentId] = useState(null)
+
+  const smoothScrollTo = (element, onFinish) => {
+    const start = window.scrollY
+    const end = element.getBoundingClientRect().top + window.scrollY - 220
+
+    const duration = 500
+    const startTime = performance.now()
+
+    const animate = (time) => {
+      const progress = Math.min((time - startTime) / duration, 1)
+
+      const ease =
+        progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2
+
+      window.scrollTo(0, start + (end - start) * ease)
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      } else {
+        onFinish?.()
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }
+
+  const scrollToObject = (id) => {
+    const el = itemRefs.current[id]
+    if (!el) return
+
+    isProgrammaticScroll.current = true
+
+    setCurrentId(id)
+
+    smoothScrollTo(el, () => {
+      isProgrammaticScroll.current = false
+    })
+  }
 
   const { queryParams, setQueryParams } = useCalendarOneDayStore()
 
@@ -74,6 +125,7 @@ export default function CalendarToday() {
     clearUpdateForm,
     startAllWorkdays,
     finishAllWorkdays,
+    alertMessage,
   } = useEditDaysAllObjectsForm(null, () => {
     resetForm()
   })
@@ -96,48 +148,77 @@ export default function CalendarToday() {
     clearUpdateForm()
   }
 
-  // const containerRef = useRef(null)
+  useEffect(() => {
+    if (!activeBadgeRef.current) return
 
-  // const HEADER_HEIGHT = 70
+    activeBadgeRef.current.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    })
+  }, [currentId])
 
-  // const handleScroll = () => {
-  //   let current = null
-  //   let minTop = Infinity
+  useEffect(() => {
+    const el = badgesRef.current
+    if (!el) return
 
-  //   Object.entries(itemRefs.current).forEach(([id, el]) => {
-  //     if (!el) return
+    const handleWheel = (e) => {
+      if (el.scrollWidth <= el.clientWidth) return
 
-  //     const top = el.getBoundingClientRect().top
+      e.preventDefault()
 
-  //     // первый элемент ниже sticky header
-  //     if (top >= HEADER_HEIGHT && top < minTop) {
-  //       minTop = top
-  //       current = Number(id)
-  //     }
-  //   })
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
 
-  //   setCurrentId(current)
-  // }
+      el.scrollLeft += delta
+    }
 
-  // useEffect(() => {
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       entries.forEach((entry) => {
-  //         if (entry.isIntersecting) {
-  //           setCurrentId(Number(entry.target.dataset.id))
-  //         }
-  //       })
-  //     },
-  //     {
-  //       rootMargin: '-70px 0px -90% 0px',
-  //       threshold: 0,
-  //     }
-  //   )
+    el.addEventListener('wheel', handleWheel, {
+      passive: false,
+    })
 
-  //   Object.values(itemRefs.current).forEach((el) => observer.observe(el))
+    return () => {
+      el.removeEventListener('wheel', handleWheel)
+    }
+  }, [])
 
-  //   return () => observer.disconnect()
-  // }, [objects])
+  useEffect(() => {
+    const updateCurrentObject = () => {
+      if (isProgrammaticScroll.current) return
+      if (!objects.length) return
+
+      let activeId = objects[0].id
+      let bestDistance = Infinity
+
+      for (const obj of objects) {
+        const el = itemRefs.current[obj.id]
+        if (!el) continue
+
+        const rect = el.getBoundingClientRect()
+
+        const distance = Math.abs(rect.top - ACTIVE_LINE)
+
+        if (distance < bestDistance) {
+          bestDistance = distance
+          activeId = obj.id
+        }
+      }
+
+      setCurrentId((prev) => (prev === activeId ? prev : activeId))
+    }
+
+    updateCurrentObject()
+
+    window.addEventListener('scroll', updateCurrentObject, {
+      passive: true,
+    })
+
+    window.addEventListener('resize', updateCurrentObject)
+
+    return () => {
+      window.removeEventListener('scroll', updateCurrentObject)
+      window.removeEventListener('resize', updateCurrentObject)
+    }
+  }, [objects])
 
   return (
     <>
@@ -158,36 +239,67 @@ export default function CalendarToday() {
             as="form"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <Box p={4} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="lg">
-              <Flex
-                direction={{ base: 'column', md: 'row' }}
-                align={{ base: 'stretch', md: 'center' }}
-                justify="space-between"
-                gap={3}
-              >
-                <Text fontSize="sm" fontWeight="semibold" color="gray.700">
-                  Массовые действия
-                </Text>
+            <Box p={4} bg="white" borderTopWidth="1px" borderBottomWidth="1px">
+              <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
+                <Box>
+                  <Text fontWeight="medium">Массовые действия</Text>
+                  <Text fontSize="sm" color="gray.500">
+                    Применяются ко всем отображаемым сотрудникам
+                  </Text>
+                </Box>
 
-                <Flex gap={2} wrap="wrap">
-                  <Button
-                    size="sm"
-                    colorPalette="green"
-                    variant="outline"
-                    onClick={() => startAllWorkdays(allSecurityWorkdays)}
+                <Box position="relative">
+                  <Presence
+                    present={!!alertMessage}
+                    position="absolute"
+                    bottom="calc(100% + 12px)"
+                    left="50%"
+                    transform="translateX(-50%)"
+                    zIndex={20}
                   >
-                    Начать всем
-                  </Button>
+                    <Alert.Root
+                      // status="success"
+                      w="fit-content"
+                      maxW="360px"
+                      shadow="lg"
+                      borderRadius="lg"
+                      variant="subtle"
+                    >
+                      <Alert.Indicator />
+                      <Alert.Content>
+                        <Alert.Description>{alertMessage}</Alert.Description>
+                      </Alert.Content>
+                    </Alert.Root>
+                  </Presence>
 
-                  <Button
-                    size="sm"
-                    colorPalette="orange"
-                    variant="outline"
-                    onClick={() => finishAllWorkdays(allSecurityWorkdays)}
-                  >
-                    Завершить всем
-                  </Button>
-                </Flex>
+                  <HStack position="relative">
+                    <IconButton
+                      size={{ base: 'xs', md: 'md' }}
+                      p={3}
+                      variant="outline"
+                      colorPalette="green"
+                      onClick={() =>
+                        startAllWorkdays(allSecurityWorkdays.filter((el) => !el.isStarted))
+                      }
+                    >
+                      <LuPlay />
+                      Начать смены
+                    </IconButton>
+
+                    <IconButton
+                      size={{ base: 'xs', md: 'md' }}
+                      p={3}
+                      colorPalette="orange"
+                      variant="outline"
+                      onClick={() =>
+                        finishAllWorkdays(allSecurityWorkdays.filter((el) => !el.isFinished))
+                      }
+                    >
+                      <LuCircleCheck />
+                      Завершить смены
+                    </IconButton>
+                  </HStack>
+                </Box>
               </Flex>
             </Box>
             <SelectYearMonthDay refetch={refetch} />
@@ -197,10 +309,7 @@ export default function CalendarToday() {
             <Box>
               {/* ✅ КОНТЕЙНЕР СО СКРОЛЛОМ + STICKY ЗАГОЛОВКИ */}
               <Box
-                // ref={containerRef}
-                // overflowY="auto"
-                // h="calc(100vh - 250px)"
-                // onScroll={handleScroll}
+                ref={scrollRef}
                 minH="350px" // 100vh минус header + пагинация
                 position="relative"
                 border="1px solid"
@@ -259,6 +368,73 @@ export default function CalendarToday() {
                   </GridItem>
                 </SimpleGrid>
 
+                {objects.length > 0 && (
+                  <Flex
+                    ref={badgesRef}
+                    position="sticky"
+                    top="78px"
+                    zIndex={9}
+                    bg="white"
+                    gap={2}
+                    wrap="nowrap"
+                    overflowX="auto"
+                    px={2}
+                    pt={2}
+                    pb={3}
+                    borderBottom="1px solid"
+                    borderBottomColor="gray.200"
+                    css={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#cbd5e1 transparent',
+
+                      '&::-webkit-scrollbar': {
+                        height: '10px',
+                      },
+
+                      '&::-webkit-scrollbar-track': {
+                        background: 'transparent',
+                      },
+
+                      '&::-webkit-scrollbar-thumb': {
+                        background: '#cbd5e1',
+                        borderRadius: '999px',
+
+                        // Полоска выглядит тонкой,
+                        // но попасть мышкой намного проще.
+                        border: '3px solid transparent',
+                        backgroundClip: 'padding-box',
+                      },
+
+                      '&::-webkit-scrollbar-thumb:hover': {
+                        background: '#94a3b8',
+                      },
+                    }}
+                  >
+                    {objects.map((objData) => {
+                      const title =
+                        objectsDictionary.find((el) => el.id === objData.id)?.title ||
+                        `Объект #${objData.id}`
+
+                      const isActive = String(currentId) === String(objData.id)
+
+                      return (
+                        <Button
+                          ref={isActive ? activeBadgeRef : null}
+                          key={objData.id}
+                          size="xs"
+                          flexShrink={0}
+                          borderRadius="full"
+                          variant={isActive ? 'solid' : 'outline'}
+                          colorPalette={isActive ? 'black' : 'gray'}
+                          onClick={() => scrollToObject(objData.id)}
+                        >
+                          {title}
+                        </Button>
+                      )
+                    })}
+                  </Flex>
+                )}
+
                 {/* ❌ НЕ STICKY - обычные строки объектов */}
 
                 {isLoading || isFetching ? (
@@ -304,6 +480,7 @@ export default function CalendarToday() {
 
                       return (
                         <SimpleGrid
+                          scrollMarginTop={ACTIVE_LINE}
                           data-id={objData.id}
                           ref={(el) => {
                             itemRefs.current[objData.id] = el
@@ -412,31 +589,70 @@ export default function CalendarToday() {
           <ActionBar.Root open={updatedWorkdays.length > 0} closeOnInteractOutside={false}>
             <Portal>
               <ActionBar.Positioner style={{ zIndex: 2000 }}>
-                <ActionBar.Content>
-                  <ActionBar.Separator />
-                  <Button
-                    onClick={clearUpdateForm}
-                    disabled={!updatedWorkdays.length > 0 || isProcessing}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <MdOutlineCancel />
-                    Сбросить
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      // Программно вызвать отправку формы
-                      handleSubmit(onSubmit)()
-                    }}
-                    disabled={!updatedWorkdays.length > 0 || isProcessing}
-                    loading={isProcessing}
-                    colorPalette="green"
-                    variant="outline"
-                    size="sm"
-                  >
-                    <CiSaveDown1 />
-                    Сохранить изменения
-                  </Button>
+                <ActionBar.Content
+                  bg="gray.900"
+                  color="white"
+                  borderRadius="xl"
+                  px={{ base: 3, md: 5 }}
+                  py={{ base: 2, md: 3 }}
+                  boxShadow="2xl"
+                  width={{ base: 'calc(100vw - 24px)', md: 'auto' }}
+                  maxW="700px"
+                  display="flex"
+                  flexDirection={{ base: 'column', sm: 'row' }}
+                  alignItems={{ base: 'stretch', sm: 'center' }}
+                  gap={{ base: 2, sm: 3 }}
+                >
+                  <HStack flex="1" minW={0} gap={2} mr={{ base: 0, md: 4 }}>
+                    <MdEdit />
+
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="medium" lineClamp={1}>
+                      <Text as="span" display={{ base: 'none', sm: 'inline' }}>
+                        Есть несохранённые изменения
+                      </Text>
+
+                      <Text as="span" display={{ base: 'inline', sm: 'none' }}>
+                        Изменения не сохранены
+                      </Text>
+                    </Text>
+                  </HStack>
+
+                  <ActionBar.Separator display={{ base: 'none', sm: 'block' }} />
+
+                  <HStack width={{ base: '100%', sm: 'auto' }} gap={2}>
+                    <Button
+                      flex={{ base: 1, sm: 'initial' }}
+                      variant="solid"
+                      colorPalette="red"
+                      color="gray.200"
+                      size={{ base: 'xs', md: 'sm' }}
+                      onClick={clearUpdateForm}
+                      disabled={updatedWorkdays.length === 0 || isProcessing}
+                    >
+                      <MdOutlineCancel />
+                      Сбросить
+                    </Button>
+
+                    <Button
+                      flex={{ base: 1, sm: 'initial' }}
+                      onClick={() => handleSubmit(onSubmit)()}
+                      disabled={updatedWorkdays.length === 0 || isProcessing}
+                      loading={isProcessing}
+                      colorPalette="green"
+                      variant="solid"
+                      size={{ base: 'xs', md: 'sm' }}
+                    >
+                      <CiSaveDown1 />
+
+                      <Text as="span" display={{ base: 'none', sm: 'inline' }}>
+                        Сохранить изменения
+                      </Text>
+
+                      <Text as="span" display={{ base: 'inline', sm: 'none' }}>
+                        Сохранить
+                      </Text>
+                    </Button>
+                  </HStack>
                 </ActionBar.Content>
               </ActionBar.Positioner>
             </Portal>

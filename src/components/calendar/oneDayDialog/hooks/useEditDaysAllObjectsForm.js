@@ -9,6 +9,8 @@ import { useForm } from 'react-hook-form'
 export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
   const [isProcessing, setIsProcessing] = useState(false)
 
+  const [alertMessage, setAlertMessage] = useState('')
+
   const updateMutation = useUpdateManySecurityWorkdays()
 
   const queryClient = useQueryClient()
@@ -163,10 +165,22 @@ export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
 
   const startAllWorkdays = (workdays) => {
     updateAllWorkdays(workdays, 'isStarted')
+
+    setAlertMessage(`Все смены отмечены начатыми. Кол-во: ${workdays.length}`)
+
+    setTimeout(() => {
+      setAlertMessage('')
+    }, 3000)
   }
 
   const finishAllWorkdays = (workdays) => {
     updateAllWorkdays(workdays, 'isFinished')
+
+    setAlertMessage(`Все смены отмечены завершенными. Кол-во: ${workdays.length}`)
+
+    setTimeout(() => {
+      setAlertMessage('')
+    }, 3000)
   }
 
   return {
@@ -190,5 +204,6 @@ export const useEditDaysAllObjectsForm = (initialData, onSuccess = null) => {
     clearUpdateForm,
     startAllWorkdays,
     finishAllWorkdays,
+    alertMessage,
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { DatePicker, Portal } from '@chakra-ui/react'
+import { DatePicker, Portal, Text } from '@chakra-ui/react'
 import { CalendarDate } from '@internationalized/date'
 import { LuCalendar } from 'react-icons/lu'
 import { useMemo, useState } from 'react'
@@ -57,9 +57,9 @@ export default function SelectYearMonth() {
       placeholder="mm/yyyy"
       maxWidth="20rem"
     >
-      <DatePicker.Label>Выберите месяц и год</DatePicker.Label>
+      <Text fontWeight="medium">Выберите месяц и год</Text>
       <DatePicker.Control>
-        <DatePicker.Input onClick={() => setOpen(true)} readOnly />
+        <DatePicker.Input cursor="pointer" onClick={() => setOpen(true)} readOnly />
         <DatePicker.IndicatorGroup>
           <DatePicker.Trigger onClick={() => setOpen(!open)}>
             <LuCalendar />
