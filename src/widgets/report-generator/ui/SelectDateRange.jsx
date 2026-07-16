@@ -1,6 +1,6 @@
 'use client'
 
-import { DatePicker, Portal } from '@chakra-ui/react'
+import { DatePicker, Portal, Text } from '@chakra-ui/react'
 import { CalendarDate } from '@internationalized/date'
 import { LuCalendar } from 'react-icons/lu'
 import { useEffect, useMemo, useState } from 'react'
@@ -74,12 +74,14 @@ export default function SelectDateRange() {
       placeholder="дд.мм.гггг"
       maxWidth="20rem"
     >
-      <DatePicker.Label>Выберите период</DatePicker.Label>
+      <Text fontWeight="medium">Выберите период</Text>
 
       <DatePicker.Control>
-        <DatePicker.Input readOnly index={0} />
+        <DatePicker.Input readOnly index={0} onClick={() => setOpen(true)} cursor="pointer" />
+
         <span>-</span>
-        <DatePicker.Input readOnly index={1} />
+
+        <DatePicker.Input readOnly index={1} onClick={() => setOpen(true)} cursor="pointer" />
         <DatePicker.IndicatorGroup>
           <DatePicker.Trigger>
             <LuCalendar />

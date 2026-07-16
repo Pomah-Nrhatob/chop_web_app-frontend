@@ -23,7 +23,8 @@ export const useCreateSchedule = () => {
       queryClient.invalidateQueries({ queryKey: ['oneObjectWorkdayInfo'] })
     },
     onError: (err) => {
-      console.log(err)
+      if (err.status === 409) return
+
       toaster.create({
         title: 'Ошибка',
         description: err.response?.data?.message || err?.message,

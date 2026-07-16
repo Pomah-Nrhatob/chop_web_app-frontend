@@ -5,6 +5,7 @@ import { SessionProviderContainer } from '@/providers/sessionProvider/provider'
 import { QueryProvider } from '@/providers/queryProvider/provider'
 import { Header } from '@/widgets/header'
 import NextTopLoader from 'nextjs-toploader'
+import './globals.css'
 
 export const viewport = {
   width: 'device-width',

@@ -179,9 +179,13 @@ const makeAuthenticatedRequest = async (
 
     return response.data
   } catch (error) {
-    if (error.response?.data) {
-      throw error.response.data
+    if (axios.isAxiosError(error) && error.response) {
+      throw {
+        status: error.response.status,
+        ...error.response.data,
+      }
     }
+
     throw error
   }
 }
