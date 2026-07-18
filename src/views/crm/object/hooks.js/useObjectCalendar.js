@@ -1,4 +1,5 @@
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 import {
   eachDayOfInterval,
   endOfMonth,
@@ -24,8 +25,9 @@ export const useObjectCalendar = () => {
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate })
   const currentMonthDays = calendarDays.filter((day) => isSameMonth(day, monthStart))
+  const activeCompanyId = useActiveCompanyId()
 
-  const { data: objectsDictionary = [] } = useGetDictionaryObjects()
+  const { data: objectsDictionary = [] } = useGetDictionaryObjects(activeCompanyId)
 
   const [isListOpen, setIsListOpen] = useState(false)
 

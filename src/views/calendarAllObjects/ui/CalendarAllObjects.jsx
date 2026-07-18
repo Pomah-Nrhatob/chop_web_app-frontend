@@ -13,6 +13,9 @@ import EmptyDayDialog from '@/components/calendar/emptyDayDialog/EmptyDayDialog'
 import CalendarPagination from '@/components/calendar/components/CalendarPagination'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
+import { Tooltip } from '@/components/ui/tooltip'
+import { Popover } from '@/components/ui/Poopover'
 
 const TOTAL_COLUMNS = 6
 
@@ -25,8 +28,9 @@ const getDayName = (dayNum, year, month) => {
 export default function CalendarAllObjects() {
   const { queryParams, getDaysInMonth, setQueryParams } = useCalendarAllObjectsStore()
   const { allObjectsWorkdays, isLoading, isFetching, refetch } = useCalendarAllObjects(queryParams)
+  const activeCompanyId = useActiveCompanyId()
 
-  const { data: objectsDictionary = [] } = useGetDictionaryObjects()
+  const { data: objectsDictionary = [] } = useGetDictionaryObjects(activeCompanyId)
 
   const [openOneDayDialog, setOpenOneDayDialog] = useState(false)
   const [openEmptyDayDialog, setOpenEmptyDayDialog] = useState(false)
@@ -196,34 +200,46 @@ export default function CalendarAllObjects() {
                         spacing={1}
                         minChildWidth={{ base: '55px', md: '100px' }}
                       >
-                        <Box
-                          h="70px"
-                          bg="gray.50"
-                          border="2px solid"
-                          borderColor="blue.200"
-                          borderRadius="lg"
-                          p={{ base: 2, md: 3 }}
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="flex-start"
-                          fontWeight="semibold"
-                          fontSize={{ base: 'xs', md: 'sm' }}
-                          color="blue.700"
-                          lineHeight="1.3"
-                          wordBreak="break-word"
-                          shadow="sm"
-                          _hover={{ bg: 'blue.50', borderColor: 'blue.400' }}
-                          sx={{
-                            overflow: 'hidden',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            lineClamp: 2,
-                          }}
+                        <Popover
+                          content={
+                            <Text whiteSpace="normal" wordBreak="break-word">
+                              {objectsDictionary.find((el) => el.id === obj.id)?.title ??
+                                `Объект #${obj.id}`}
+                            </Text>
+                          }
                         >
-                          {objectsDictionary.find((el) => el.id === obj.id)?.title ||
-                            `Объект #${obj.id}`}
-                        </Box>
+                          <Box
+                            h="70px"
+                            bg="gray.50"
+                            border="2px solid"
+                            borderColor="blue.200"
+                            borderRadius="lg"
+                            p={{ base: 2, md: 3 }}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            overflow="hidden"
+                            shadow="sm"
+                            _hover={{ bg: 'blue.50', borderColor: 'blue.400' }}
+                          >
+                            <Text
+                              fontWeight="semibold"
+                              fontSize={{ base: '9px', sm: 'xs', md: 'sm' }}
+                              color="blue.700"
+                              lineHeight={{ base: '1.15', md: '1.3' }}
+                              textAlign="center"
+                              maxH="100%"
+                              overflow="hidden"
+                              sx={{
+                                wordBreak: 'break-all',
+                                overflowWrap: 'anywhere',
+                              }}
+                            >
+                              {objectsDictionary.find((el) => el.id === obj.id)?.title ??
+                                `Объект #${obj.id}`}
+                            </Text>
+                          </Box>
+                        </Popover>
                         {Array.from({ length: 5 }, (_, i) => {
                           const dayNum = queryParams.startDay + i
 

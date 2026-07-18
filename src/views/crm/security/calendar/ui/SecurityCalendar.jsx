@@ -14,6 +14,8 @@ import {
   parseISO,
   getYear,
   getMonth,
+  addMonths,
+  subMonths,
 } from 'date-fns'
 
 import { useParams } from 'next/navigation'
@@ -34,6 +36,8 @@ import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
 import { useCreateVacation } from '@/features/calendar/api/use-create-vacation'
 import VacationConfirmModal from '@/components/calendar/vacationModal/VacationConfirmModal'
 import OneDayVacationDialog from '@/components/calendar/oneDayDialog/OneDayVacationDialog'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
+import { LuChevronDown, LuChevronUp } from 'react-icons/lu'
 
 export default function SecurityCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -58,12 +62,13 @@ export default function SecurityCalendar() {
   const securityId = Number(params.id)
 
   const { mutate: createVacation, isPending: isCreatingVacation } = useCreateVacation()
+  const activeCompanyId = useActiveCompanyId()
 
   const { data: securityDictionary = [], isLoading: isSecurityDictLoading } =
-    useGetDictionarySecurities()
+    useGetDictionarySecurities(activeCompanyId)
 
   const { data: objectsDictionary = [], isLoading: isObjectsDictLoading } =
-    useGetDictionaryObjects()
+    useGetDictionaryObjects(activeCompanyId)
 
   const stableTitle = useMemo(() => {
     if (isSecurityDictLoading || !securityDictionary?.length) {
@@ -279,16 +284,8 @@ export default function SecurityCalendar() {
     setOpenEmptyDayDialog(true)
   }
 
-  const handleMonthChange = (e) => {
-    const newMonth = Number(e.target.value) - 1
-
-    setCurrentMonth(new Date(year, newMonth, 1))
-  }
-
-  const handleYearChange = (e) => {
-    const newYear = Number(e.target.value)
-
-    setCurrentMonth(new Date(newYear, month - 1, 1))
+  const handleDateChange = ({ year: y, month: m }) => {
+    setCurrentMonth(new Date(y, m - 1, 1))
   }
 
   const handleModeChange = (mode) => {
@@ -333,7 +330,7 @@ export default function SecurityCalendar() {
 
       <ContainerForPage
         title="Календарь сотрудника"
-        text={`Раздел для управления рабочими днями сотрудника ${stableTitle}`}
+        text={`Раздел для управления рабочими днями сотрудника ${stableTitle || ''}`}
         actionComponent={
           !isPageLoading &&
           !isError && <SecurityReportGenerator itemId={securityId} year={year} month={month} />
@@ -364,8 +361,34 @@ export default function SecurityCalendar() {
               <Text>Ошибка загрузки данных с сервера</Text>
             </Flex>
           ) : (
-            <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
-              {isListOpen && <SecurityList />}
+            <VStack
+              align="stretch"
+              gap={6}
+              p={4}
+              bg="white"
+              borderRadius="xl"
+              shadow="sm"
+              mb={{ base: 14, md: 12 }}
+            >
+              <Button
+                variant="ghost"
+                justifyContent="space-between"
+                onClick={() => setIsListOpen((prev) => !prev)}
+              >
+                {isListOpen ? 'Скрыть список сотрудников' : 'Открыть список сотрудников'}
+                {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
+              </Button>
+
+              <Box
+                overflow="hidden"
+                transition="max-height .25s ease, opacity .2s ease"
+                maxH={isListOpen ? '100%' : '0'}
+                opacity={isListOpen ? 1 : 0}
+                shadow="md"
+                borderRadius="xl"
+              >
+                <SecurityList />
+              </Box>
 
               <SecurityCalendarHeader
                 securityId={securityId}
@@ -381,11 +404,12 @@ export default function SecurityCalendar() {
                 setCalendarMode={setCalendarMode}
                 shifts={shifts}
                 objectsDictionary={objectsDictionary}
-                onMonthChange={handleMonthChange}
-                onYearChange={handleYearChange}
+                onDateChange={handleDateChange}
                 onModeChange={handleModeChange}
                 onSelectAllDays={selectAllDays}
                 onSelectEmptyDays={selectDaysWithoutShifts}
+                onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
               />
 
               <SecurityCalendarGrid

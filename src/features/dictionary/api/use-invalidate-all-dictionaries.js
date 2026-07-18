@@ -1,6 +1,10 @@
 'use client'
 
-import { DICTIONARY_OBJECTS_KEY } from '@/features/dictionary/api/use-get-dictionary-objects'
+import {
+  DICTIONARY_COMPANY_ID_KEY,
+  DICTIONARY_COMPANY_STORAGE_KEY,
+  DICTIONARY_OBJECTS_KEY,
+} from '@/features/dictionary/api/use-get-dictionary-objects'
 import { DICTIONARY_SECURITIES_KEY } from '@/features/dictionary/api/use-get-dictionary-securities'
 import { DICTIONARY_SECURITY_POSITION_KEY } from '@/features/dictionary/api/use-get-dictionary-securityPosition'
 import { useDictionaryCacheReset } from '@/features/dictionary/hooks/useDictionaryCacheReset'
@@ -17,10 +21,12 @@ export const useInvalidateAllDictionaries = () => {
         queryClient.invalidateQueries({ queryKey: DICTIONARY_SECURITIES_KEY }),
         queryClient.invalidateQueries({ queryKey: DICTIONARY_OBJECTS_KEY }),
         queryClient.invalidateQueries({ queryKey: DICTIONARY_SECURITY_POSITION_KEY }),
+        queryClient.invalidateQueries({ queryKey: DICTIONARY_COMPANY_ID_KEY }),
         resetDictionaryCache([
           DICTIONARY_SECURITIES_KEY,
           DICTIONARY_OBJECTS_KEY,
           DICTIONARY_SECURITY_POSITION_KEY,
+          DICTIONARY_COMPANY_ID_KEY,
         ]),
       ])
     },

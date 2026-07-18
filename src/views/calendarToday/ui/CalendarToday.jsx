@@ -7,6 +7,7 @@ import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
 import { useCalendarOneDay } from '@/features/calendar/api/use-calendarOneDay'
 import { useCalendarOneDayStore } from '@/features/calendar/store/useCalendarOneDayStore'
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 import SecurityWorkdayForm from '@/views/calendarToday/ui/SecurityWorkdayForm'
 import SelectYearMonthDay from '@/views/calendarToday/ui/SelectYearMonthDay'
 import {
@@ -112,7 +113,9 @@ export default function CalendarToday() {
 
   const objects = oneDayWorkdays?.data || []
 
-  const { data: objectsDictionary = [] } = useGetDictionaryObjects()
+  const activeCompanyId = useActiveCompanyId()
+
+  const { data: objectsDictionary = [] } = useGetDictionaryObjects(activeCompanyId)
 
   const {
     updateWorkday,

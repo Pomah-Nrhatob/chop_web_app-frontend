@@ -2,6 +2,7 @@ import { WORKDAY_OPTIONS } from '@/components/calendar/data/workday-options'
 import { useGetDictionarySecurities } from '@/features/dictionary/api/use-get-dictionary-securities'
 import SelectSecurity from '@/features/dictionary/components/selectWithSearch/SelectSecurity'
 import { useGetSecurityByIdApi } from '@/features/security/api/use-get-security-by-id-api'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 import {
   Badge,
   Box,
@@ -51,7 +52,8 @@ const SecurityDayInfoBySecurities = memo(function SecurityDayInfoBySecurities({
   isNewWorkday = false,
   isEdited = false,
 }) {
-  const { data: securities = [] } = useGetDictionarySecurities()
+  const activeCompanyId = useActiveCompanyId()
+  const { data: securities = [] } = useGetDictionarySecurities(activeCompanyId)
 
   const [isDisableDelete, setIsDiableDelete] = useState(worker.isStarted || worker.isFinished)
 
