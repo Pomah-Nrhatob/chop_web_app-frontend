@@ -125,7 +125,7 @@ export default function SecurityCalendarDayCell({
 
   return (
     <Box
-      minH={{ base: '68px', sm: '82px', md: '110px' }}
+      minH="110px"
       h="100%"
       minW={0}
       position="relative"

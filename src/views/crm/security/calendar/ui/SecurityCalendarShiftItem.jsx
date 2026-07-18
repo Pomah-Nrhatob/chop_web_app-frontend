@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, HStack, Text, VStack } from '@chakra-ui/react'
+import { Badge, Box, Flex, Text, VStack } from '@chakra-ui/react'
 
 export default function SecurityCalendarShiftItem({
   title,
@@ -12,115 +12,106 @@ export default function SecurityCalendarShiftItem({
 }) {
   const isVacation = type === 'vacation'
 
+  const interactiveProps = isInteractive
+    ? {
+        as: 'button',
+        type: 'button',
+        cursor: 'pointer',
+        onClick,
+        _hover: {
+          transform: 'translateY(-1px)',
+          boxShadow: 'sm',
+          bg: isSelected ? 'blue.600' : 'gray.50',
+        },
+        _active: {
+          transform: 'scale(0.98)',
+        },
+        _focusVisible: {
+          outline: '2px solid',
+          outlineColor: 'blue.400',
+          outlineOffset: '2px',
+        },
+      }
+    : {}
+
   return (
     <Box
-      as={isInteractive && onClick ? 'button' : 'div'}
-      type={isInteractive && onClick ? 'button' : undefined}
-      width="100%"
+      w="full"
+      h="full"
       minW={0}
       minH={0}
-      display="flex"
-      alignItems="stretch"
-      textAlign="left"
-      borderRadius="md"
-      cursor={isInteractive ? 'pointer' : 'inherit'}
-      transition="background-color 0.15s ease, transform 0.15s ease"
-      _hover={
-        isInteractive
-          ? {
-              bg: isSelected ? 'whiteAlpha.200' : 'blackAlpha.100',
-            }
-          : undefined
-      }
-      _active={isInteractive ? { transform: 'scale(0.98)' } : undefined}
-      _focusVisible={
-        isInteractive
-          ? {
-              outline: '2px solid',
-              outlineColor: isSelected ? 'whiteAlpha.700' : 'blue.400',
-              outlineOffset: '-2px',
-            }
-          : undefined
-      }
-      onClick={onClick}
+      overflow="hidden"
+      borderRadius="xl"
+      transition="all .18s cubic-bezier(.2,.8,.2,1)"
+      bg={isSelected ? 'blue.500' : 'transparent'}
+      color={isSelected ? 'white' : 'gray.800'}
+      {...interactiveProps}
     >
       {isVacation ? (
-        <VStack
-          width="100%"
-          minW={0}
-          justify="center"
-          align="center"
-          gap={{ base: 0, md: 1 }}
-          px={1}
-          py={{ base: 0.5, md: 1 }}
-        >
+        <Flex h="100%" direction="column" align="center" justify="center" gap={1} px={2} py={2}>
           <Text
-            as="span"
-            fontSize={{ base: '14px', sm: '16px', md: '20px' }}
+            fontSize={{
+              base: '18px',
+              md: '22px',
+            }}
             lineHeight="1"
-            aria-hidden="true"
           >
             🏖️
           </Text>
 
           <Text
             display={{ base: 'none', sm: 'block' }}
-            maxW="100%"
-            fontSize={{ sm: '8px', md: 'xs' }}
-            lineHeight="1.1"
-            fontWeight="700"
+            fontSize={{
+              sm: '9px',
+              md: 'xs',
+            }}
+            fontWeight="600"
             textAlign="center"
-            whiteSpace="normal"
-            overflowWrap="anywhere"
-            wordBreak="break-word"
+            opacity={0.95}
           >
             Отпуск
           </Text>
-        </VStack>
+        </Flex>
       ) : (
         <VStack
-          width="100%"
-          minW={0}
-          minH={0}
-          justify="center"
+          h="100%"
           align="stretch"
-          gap={{ base: 0.5, md: 1 }}
-          px={{ base: 0.5, md: 1 }}
-          py={{ base: 0.5, md: 1 }}
+          justify="space-between"
+          spacing={2}
+          px={{ base: 1, md: 2 }}
+          py={{ base: 1, md: 2 }}
         >
           <Text
-            width="100%"
-            minW={0}
-            fontSize={{ base: '7px', sm: '8px', md: '11px', lg: 'xs' }}
-            lineHeight={{ base: '1.08', md: '1.18' }}
-            fontWeight="650"
-            color={isSelected ? 'white' : 'gray.800'}
-            textAlign="left"
-            whiteSpace="normal"
-            overflowWrap="anywhere"
-            wordBreak="break-word"
-            hyphens="auto"
+            flex="1"
+            fontSize={{
+              base: '11px',
+              sm: '12px',
+              md: '13px',
+              lg: 'sm',
+            }}
+            fontWeight="600"
+            lineHeight="1.35"
+            noOfLines={3}
+            color="inherit"
           >
             {title}
           </Text>
 
           {additionalCount > 0 && (
-            <HStack justify="flex-end" mt="auto" minW={0}>
-              <Text
-                as="span"
-                px={{ base: 1, md: 1.5 }}
-                py="1px"
+            <Flex justify="flex-end">
+              <Badge
                 borderRadius="full"
-                bg={isSelected ? 'whiteAlpha.300' : 'blackAlpha.100'}
-                color={isSelected ? 'white' : 'gray.700'}
-                fontSize={{ base: '7px', sm: '8px', md: '2xs' }}
-                lineHeight="1.4"
+                px={2}
+                py={0.5}
+                fontSize="10px"
                 fontWeight="700"
-                whiteSpace="nowrap"
+                textTransform="none"
+                bg={isSelected ? 'whiteAlpha.300' : 'gray.100'}
+                color={isSelected ? 'white' : 'gray.600'}
               >
                 +{additionalCount}
-              </Text>
-            </HStack>
+              </Badge>
+            </Flex>
           )}
         </VStack>
       )}
