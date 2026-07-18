@@ -23,6 +23,7 @@ import { IoIosAdd } from 'react-icons/io'
 import { useGetOneSecurityWorkday } from '@/features/calendar/api/useGetOneSecurityWorkday'
 import SelectOneObject from '@/features/dictionary/components/selectWithSearch/SelectOneObject'
 import SecurityDayInfoBySecurities from './SecurityDayInfoBySecurities'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 
 export default function OneDaySecurityDialog({
   open,
@@ -31,6 +32,8 @@ export default function OneDaySecurityDialog({
   setSelectedWorkday,
 }) {
   const [isEditing, setIsEditing] = useState(false)
+
+  const activeCompanyId = useActiveCompanyId()
 
   const { isLoading, oneSecurityWorkdayInfo, isFetching } = useGetOneSecurityWorkday(
     selectedWorkday,
@@ -117,8 +120,9 @@ export default function OneDaySecurityDialog({
       return 'Неизвестная дата'
     }
   }
-  const { data: securities = [], isLoading: loadingSecurities } = useGetDictionarySecurities()
-  const { data: objects = [], isLoading: loadingObjects } = useGetDictionaryObjects()
+  const { data: securities = [], isLoading: loadingSecurities } =
+    useGetDictionarySecurities(activeCompanyId)
+  const { data: objects = [], isLoading: loadingObjects } = useGetDictionaryObjects(activeCompanyId)
 
   const foundSecurity = securities?.find((sec) => sec.id === oneSecurityWorkdayInfo?.securityId)
   const foundObject = objects?.find((obj) => obj.id === oneSecurityWorkdayInfo?.securityObjectId)

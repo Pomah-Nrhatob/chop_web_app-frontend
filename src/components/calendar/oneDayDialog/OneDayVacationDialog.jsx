@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 
 export default function OneDayVacationDialog({
   open,
@@ -31,9 +32,12 @@ export default function OneDayVacationDialog({
     }
   )
 
+  const activeCompanyId = useActiveCompanyId()
+
   const { mutate: deleteVacation, isPending: isDeletingVacation } = useDeleteVacation()
 
-  const { data: securities = [], isLoading: loadingSecurities } = useGetDictionarySecurities()
+  const { data: securities = [], isLoading: loadingSecurities } =
+    useGetDictionarySecurities(activeCompanyId)
 
   const foundSecurity = securities?.find((sec) => sec.id === oneSecurityWorkdayInfo?.securityId)
 

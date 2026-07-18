@@ -17,6 +17,7 @@ import { FaRegBuilding } from 'react-icons/fa'
 import { InfoRow, InfoSection } from '@/components/ui/InfoCard'
 import { useGetDictionarySecurityPosition } from '@/features/dictionary/api/use-get-dictionary-securityPosition'
 import { useGetDictionaryObjects } from '@/features/dictionary/api/use-get-dictionary-objects'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 
 const formatDate = (value) => {
   if (!value) return '—'
@@ -44,8 +45,10 @@ export const SecurityDetails = ({ security }) => {
     return `${age} лет`
   }
 
-  const { data: positions = [] } = useGetDictionarySecurityPosition()
-  const { data: objects = [] } = useGetDictionaryObjects()
+  const activeCompanyId = useActiveCompanyId()
+
+  const { data: positions = [] } = useGetDictionarySecurityPosition(activeCompanyId)
+  const { data: objects = [] } = useGetDictionaryObjects(activeCompanyId)
 
   const formatPhoneNumber = (phone) => {
     if (!phone) return '—'

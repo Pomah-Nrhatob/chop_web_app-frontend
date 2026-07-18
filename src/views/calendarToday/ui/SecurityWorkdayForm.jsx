@@ -14,6 +14,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { WORKDAY_OPTIONS } from '@/components/calendar/data/workday-options'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 
 export default function SecurityWorkdayForm({ worker, updateWorkday }) {
   const [localShiftSalary, setLocalShiftSalary] = useState(worker.shiftSalary ?? 0)
@@ -25,8 +26,9 @@ export default function SecurityWorkdayForm({ worker, updateWorkday }) {
     setLocalStartedComment(worker.isStartedComment || '')
     setLocalFinishedComment(worker.isFinishedComment || '')
   }, [worker.shiftSalary, worker.isStartedComment, worker.isFinishedComment])
+  const activeCompanyId = useActiveCompanyId()
 
-  const { data: securities = [] } = useGetDictionarySecurities()
+  const { data: securities = [] } = useGetDictionarySecurities(activeCompanyId)
 
   const securitiesMap = useMemo(() => {
     const map = new Map()

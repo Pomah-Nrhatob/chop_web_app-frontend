@@ -60,16 +60,20 @@ export default function WorkdayCell(
       <Flex direction="column" align="center" gap={1.5}>
         {/* Главная иконка + чип */}
         <Flex align="center" gap={1.5}>
-          <Icon as={MdPlayCircleFilled} boxSize={5} color={`${colorScheme}.600`} />
-          <Badge size="sm" colorScheme={colorScheme} fontWeight="bold" px={2} py={1}>
+          <Icon as={MdPlayCircleFilled} boxSize={{ base: 4, md: 5 }} color={`${colorScheme}.600`} />
+          <Badge variant="plain" size={{ base: 'xs', md: 'sm' }} fontWeight="bold" px={0} py={1}>
             {workday.startedCount}/{workday.totalWorkers}
           </Badge>
         </Flex>
 
         {/* Маленькая иконка + чип */}
         <Flex align="center" gap={1.5}>
-          <Icon as={MdCheckCircle} boxSize={5} color={progress >= 80 ? 'green' : 'gray.600'} />
-          <Badge size="sm" variant="" fontSize="xs" px={2} py={1}>
+          <Icon
+            as={MdCheckCircle}
+            boxSize={{ base: 4, md: 5 }}
+            color={progress >= 80 ? 'green' : 'gray.600'}
+          />
+          <Badge size={{ base: 'xs', md: 'sm' }} variant="plain" px={0} py={1}>
             {workday.finishedCount}
           </Badge>
         </Flex>

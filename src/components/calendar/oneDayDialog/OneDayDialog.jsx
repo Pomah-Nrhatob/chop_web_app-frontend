@@ -24,8 +24,12 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { useState, useMemo } from 'react'
 import { IoIosAdd } from 'react-icons/io'
+import { useUser } from '@/features/users/api/use-user'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 
 export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelectedWorkday }) {
+  const activeCompanyId = useActiveCompanyId()
+
   const [isEditing, setIsEditing] = useState(false)
 
   const { isLoading, oneObjectWorkdayInfo, isFetching } = useGetOneObjectWorkday(selectedWorkday, {
@@ -118,8 +122,8 @@ export default function OneDayDialog({ open, setOpen, selectedWorkday, setSelect
     }
   }
 
-  const { data: objects = [], isLoading: loadingObjects } = useGetDictionaryObjects()
-  const { isLoading: loadingSecurities } = useGetDictionarySecurities()
+  const { data: objects = [], isLoading: loadingObjects } = useGetDictionaryObjects(activeCompanyId)
+  const { isLoading: loadingSecurities } = useGetDictionarySecurities(activeCompanyId)
 
   const foundObject = objects.find((obj) => obj.id === oneObjectWorkdayInfo?.securityObjectId)
 

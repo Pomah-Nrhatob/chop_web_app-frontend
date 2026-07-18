@@ -31,6 +31,7 @@ import CalendarActionBar from './CalendarActionBar'
 import ObjectReportGenerator from '@/widgets/report-generator/ui/ObjectReportGenerator'
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import { NoActiveCompany } from '@/components/ui/NoActiveCompany'
+import { useActiveCompanyId } from '@/shared/hooks/useActiveCompanyId'
 
 export default function ObjectCalendar() {
   const [calendarMode, setCalendarMode] = useState('view')
@@ -45,8 +46,10 @@ export default function ObjectCalendar() {
 
   const params = useParams()
   const securityObjectId = Number(params.id)
+  const activeCompanyId = useActiveCompanyId()
 
-  const { data: objectsDictionary = [], isLoading: isDictLoading } = useGetDictionaryObjects()
+  const { data: objectsDictionary = [], isLoading: isDictLoading } =
+    useGetDictionaryObjects(activeCompanyId)
 
   const stableTitle = useMemo(() => {
     if (isDictLoading || !objectsDictionary?.length) {
@@ -188,7 +191,7 @@ export default function ObjectCalendar() {
 
       <ContainerForPage
         title="Календарь объекта"
-        text={`Раздел для управления рабочими днями объекта "${stableTitle}"`}
+        text={`Раздел для управления рабочими днями объекта "${stableTitle || ''}"`}
         actionComponent={
           !isPageLoading &&
           !isError && (
@@ -225,7 +228,15 @@ export default function ObjectCalendar() {
               <Text>Ошибка загрузки данных с сервера</Text>
             </Flex>
           ) : (
-            <VStack align="stretch" gap={6} p={4} bg="white" borderRadius="xl" shadow="sm">
+            <VStack
+              align="stretch"
+              gap={6}
+              p={4}
+              bg="white"
+              borderRadius="xl"
+              shadow="sm"
+              mb={{ base: 14, md: 12 }}
+            >
               <Button
                 variant="ghost"
                 justifyContent="space-between"
@@ -235,7 +246,16 @@ export default function ObjectCalendar() {
                 {isListOpen ? <LuChevronUp /> : <LuChevronDown />}
               </Button>
 
-              {isListOpen && <ObjectList />}
+              <Box
+                overflow="hidden"
+                transition="max-height .25s ease, opacity .2s ease"
+                maxH={isListOpen ? '100%' : '0'}
+                opacity={isListOpen ? 1 : 0}
+                shadow="md"
+                borderRadius="xl"
+              >
+                <ObjectList />
+              </Box>
 
               <CalendarHeader
                 objectTitle={stableTitle}

@@ -55,15 +55,14 @@ const CalendarDayCell = ({
     return (
       <VStack gap={1} h="100%" justify="center">
         <HStack gap={1}>
-          <Icon as={MdPlayCircleFilled} boxSize={4} color={`${colorScheme}.600`} />
+          <Icon as={MdPlayCircleFilled} boxSize={{ base: 3, md: 5 }} color={`${colorScheme}.600`} />
           <Badge
-            size="sm"
+            variant="plain"
+            size={{ base: 'xs', md: 'sm' }}
             colorScheme={isSelected ? 'whiteAlpha' : colorScheme}
-            variant={isSelected ? 'solid' : 'subtle'}
             fontWeight="bold"
-            fontSize="2xs"
-            px={1.5}
-            py={0.5}
+            px={0}
+            py={1}
             onClick={(e) => {
               if (calendarMode === 'view' && dayShifts[0]) {
                 e.stopPropagation()
@@ -79,15 +78,14 @@ const CalendarDayCell = ({
         <HStack gap={1}>
           <Icon
             as={MdCheckCircle}
-            boxSize={4}
+            boxSize={{ base: 3, md: 5 }}
             color={aggregated.finishedCount === aggregated.totalWorkers ? 'green.600' : 'gray.400'}
           />
           <Badge
-            size="sm"
-            variant="subtle"
-            fontSize="2xs"
-            px={1.5}
-            py={0.5}
+            variant="plain"
+            size={{ base: 'xs', md: 'sm' }}
+            px={0}
+            py={1}
             colorScheme={isSelected ? 'whiteAlpha' : 'gray'}
           >
             {aggregated.finishedCount}

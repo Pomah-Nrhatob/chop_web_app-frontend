@@ -1,5 +1,8 @@
 import { ONE_COMPANY_QUERY_KEY } from '@/features/company/api/use-company'
-import { DICTIONARY_OBJECTS_KEY } from '@/features/dictionary/api/use-get-dictionary-objects'
+import {
+  DICTIONARY_COMPANY_ID_KEY,
+  DICTIONARY_OBJECTS_KEY,
+} from '@/features/dictionary/api/use-get-dictionary-objects'
 import { DICTIONARY_SECURITIES_KEY } from '@/features/dictionary/api/use-get-dictionary-securities'
 import { DICTIONARY_SECURITY_POSITION_KEY } from '@/features/dictionary/api/use-get-dictionary-securityPosition'
 import { useDictionaryCacheReset } from '@/features/dictionary/hooks/useDictionaryCacheReset'
@@ -52,6 +55,7 @@ export const useChangeActiveCompany = (additionalOnSuccess) => {
         DICTIONARY_OBJECTS_KEY,
         DICTIONARY_SECURITIES_KEY,
         DICTIONARY_SECURITY_POSITION_KEY,
+        DICTIONARY_COMPANY_ID_KEY,
       ])
 
       queryClient.invalidateQueries({
