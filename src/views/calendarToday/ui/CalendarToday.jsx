@@ -591,7 +591,7 @@ export default function CalendarToday() {
 
           <ActionBar.Root open={updatedWorkdays.length > 0} closeOnInteractOutside={false}>
             <Portal>
-              <ActionBar.Positioner style={{ zIndex: 2000 }}>
+              <ActionBar.Positioner style={{ zIndex: 500 }}>
                 <ActionBar.Content
                   bg="gray.900"
                   color="white"

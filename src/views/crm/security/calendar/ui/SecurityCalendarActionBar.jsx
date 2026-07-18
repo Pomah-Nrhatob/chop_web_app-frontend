@@ -13,7 +13,7 @@ export default function SecurityCalendarActionBar({
   return (
     <ActionBar.Root open={selectedDates.length > 0} closeOnInteractOutside={false}>
       <Portal>
-        <ActionBar.Positioner style={{ zIndex: 2000 }}>
+        <ActionBar.Positioner style={{ zIndex: 500 }}>
           <ActionBar.Content
             bg="blue.900"
             color="white"

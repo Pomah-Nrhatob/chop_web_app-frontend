@@ -100,6 +100,7 @@ export default function CalendarHeader({
 
             <SegmentGroup.Items
               cursor="pointer"
+              w="100%"
               items={[
                 {
                   value: 'view',
