@@ -70,16 +70,16 @@ export default function SecurityCalendar() {
   const { data: objectsDictionary = [], isLoading: isObjectsDictLoading } =
     useGetDictionaryObjects(activeCompanyId)
 
-  const stableTitle = useMemo(() => {
+  const description = useMemo(() => {
     if (isSecurityDictLoading || !securityDictionary?.length) {
-      return `Сотрудник #${securityId}`
+      return 'Раздел для управления рабочими днями сотрудника'
     }
 
     const currentSecurity = securityDictionary.find((el) => el.id === securityId)
 
-    return currentSecurity
-      ? `${currentSecurity.name} ${currentSecurity.surname}`
-      : `Сотрудник #${securityId}`
+    return `Раздел для управления рабочими днями сотрудника ${
+      currentSecurity ? `${currentSecurity.name} ${currentSecurity.surname}` : ''
+    }`
   }, [isSecurityDictLoading, securityDictionary, securityId])
 
   const year = getYear(currentMonth)
@@ -330,7 +330,7 @@ export default function SecurityCalendar() {
 
       <ContainerForPage
         title="Календарь сотрудника"
-        text={`Раздел для управления рабочими днями сотрудника ${stableTitle || ''}`}
+        text={description}
         actionComponent={
           !isPageLoading &&
           !isError && <SecurityReportGenerator itemId={securityId} year={year} month={month} />

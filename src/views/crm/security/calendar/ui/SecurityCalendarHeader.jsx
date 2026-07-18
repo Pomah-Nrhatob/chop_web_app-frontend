@@ -99,6 +99,7 @@ export default function SecurityCalendarHeader({
             <SegmentGroup.Indicator />
 
             <SegmentGroup.Items
+              w="100%"
               cursor="pointer"
               items={[
                 {

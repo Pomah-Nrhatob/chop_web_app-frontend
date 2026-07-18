@@ -131,7 +131,6 @@ export default function OneDaySecurityDialog({
     setOpen(false)
   }
 
-  console.log(oneSecurityWorkdayInfo)
   return (
     <Dialog.Root
       lazyMount
