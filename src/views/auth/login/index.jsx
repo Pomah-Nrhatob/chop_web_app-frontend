@@ -1,6 +1,13 @@
+import { createMetadata } from '@/lib/seo/createMetadata'
 import { LoginForm } from '@/views/auth/login/ui/Login'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
 import Link from 'next/link'
+
+export const metadata = createMetadata({
+  title: 'Uchop | Вход',
+  description: 'Войдите в личный кабинет Uchop.',
+  noIndex: true,
+})
 
 export default function LoginPage() {
   return (

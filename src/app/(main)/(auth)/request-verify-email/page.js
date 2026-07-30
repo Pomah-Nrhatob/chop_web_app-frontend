@@ -1,1 +1,1 @@
-export { default } from '@/views/auth/request-verify-email/index'
+export { default, metadata } from '@/views/auth/request-verify-email/index'

@@ -3,7 +3,6 @@ import { AuthSessionSync } from '@/providers/authSessionSync/provider'
 import { Provider } from '@/providers/chakraProvider/provider'
 import { SessionProviderContainer } from '@/providers/sessionProvider/provider'
 import { QueryProvider } from '@/providers/queryProvider/provider'
-import { Header } from '@/widgets/header'
 import NextTopLoader from 'nextjs-toploader'
 import './globals.css'
 
@@ -15,9 +14,9 @@ export const viewport = {
 }
 
 export const metadata = {
-  title: 'Uchop | Управление бизнесом',
+  metadataBase: new URL('https://uchop.ru'),
+  applicationName: 'Uchop',
   icons: '/favicon.png',
-  description: 'Управление бизнесом в твоем кармане',
 }
 
 export default async function RootLayout({ children }) {
@@ -41,7 +40,6 @@ export default async function RootLayout({ children }) {
                   speed={200}
                   shadow="0 0 10px #3182ce,0 0 5px #3182ce"
                 />
-                <Header />
                 {children}
               </AuthSessionSync>
             </QueryProvider>

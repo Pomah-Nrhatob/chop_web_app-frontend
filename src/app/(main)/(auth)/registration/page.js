@@ -1,1 +1,1 @@
-export { default } from '@/views/auth/registration/index'
+export { default, metadata } from '@/views/auth/registration/index'

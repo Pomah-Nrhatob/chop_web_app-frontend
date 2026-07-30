@@ -67,9 +67,11 @@ export const Header = () => {
             />
           </Box>
         ) : (
-          <Button colorPalette="teal" variant="solid" onClick={() => router.push('login')}>
-            Войти <CiLogin />
-          </Button>
+          <Link href={'/login'}>
+            <Button colorPalette="teal" variant="solid">
+              Войти <CiLogin />
+            </Button>
+          </Link>
         )}
       </Flex>
     </HeaderContainer>
