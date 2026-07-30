@@ -1,7 +1,6 @@
 export function generateSchema(...schemas) {
-  return {
+  return JSON.stringify({
     '@context': 'https://schema.org',
-
     '@graph': schemas.filter(Boolean),
-  }
+  })
 }
