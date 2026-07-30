@@ -1,6 +1,13 @@
+import { createMetadata } from '@/lib/seo/createMetadata'
 import { RegisterForm } from '@/views/auth/registration/ui/Registration'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
 import Link from 'next/link'
+
+export const metadata = createMetadata({
+  title: 'Uchop | Регистрация',
+  description: 'Создайте аккаунт в Uchop и начните управлять персоналом.',
+  noIndex: true,
+})
 
 export default function RegistrationPage() {
   return (
