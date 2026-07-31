@@ -3,7 +3,7 @@
 import ContainerForPage from '@/components/containerForPage/ContainerForPage'
 import ObjectReportGenerator from '@/widgets/report-generator/ui/ObjectReportGenerator'
 import SecurityReportGenerator from '@/widgets/report-generator/ui/SecurityReportGenerator'
-import { Box, SimpleGrid, Heading, Text, VStack, Icon, Center } from '@chakra-ui/react'
+import { Box, SimpleGrid, Heading, Text, VStack, Icon, Center, Button } from '@chakra-ui/react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { LuShieldCheck, LuBuilding2 } from 'react-icons/lu'

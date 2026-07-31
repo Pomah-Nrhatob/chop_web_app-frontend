@@ -10,28 +10,28 @@ export default function sitemap() {
     {
       url: siteConfig.url,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 1,
     },
 
     {
       url: `${siteConfig.url}/features`,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 0.9,
     },
 
     {
       url: `${siteConfig.url}/solutions`,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 0.9,
     },
 
     {
       url: `${siteConfig.url}/use-cases`,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 0.9,
     },
 
@@ -55,5 +55,24 @@ export default function sitemap() {
       changeFrequency: 'monthly',
       priority: 0.8,
     })),
+
+    {
+      url: `${siteConfig.url}/privacy-policy`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
+      url: `${siteConfig.url}/terms`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
+      url: `${siteConfig.url}/cookie-policy`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
   ]
 }
