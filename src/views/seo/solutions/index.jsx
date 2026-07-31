@@ -40,7 +40,7 @@ export default function SolutionsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schema).replace(/</g, '\\u003c'),
+          __html: schema,
         }}
       />
 

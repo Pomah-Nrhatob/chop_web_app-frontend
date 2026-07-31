@@ -76,7 +76,7 @@ export default async function OneSolutionPage({ params }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schema).replace(/</g, '\\u003c'),
+          __html: schema,
         }}
       />
 

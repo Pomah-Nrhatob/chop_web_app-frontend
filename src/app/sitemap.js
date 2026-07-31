@@ -1,6 +1,7 @@
 import { siteConfig } from '@/lib/seo/siteConfig'
 import { features } from '@/lib/seo/content/features'
 import solutions from '@/lib/seo/content/solutions'
+import { useCases } from '@/lib/seo/content/use-cases'
 
 export default function sitemap() {
   const now = new Date()
@@ -27,6 +28,13 @@ export default function sitemap() {
       priority: 0.9,
     },
 
+    {
+      url: `${siteConfig.url}/use-cases`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+
     ...Object.values(features).map((feature) => ({
       url: `${siteConfig.url}/features/${feature.slug}`,
       lastModified: now,
@@ -36,6 +44,13 @@ export default function sitemap() {
 
     ...Object.values(solutions).map((solution) => ({
       url: `${siteConfig.url}/solutions/${solution.slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    })),
+
+    ...Object.values(useCases).map((useCase) => ({
+      url: `${siteConfig.url}/use-cases/${useCase.slug}`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.8,

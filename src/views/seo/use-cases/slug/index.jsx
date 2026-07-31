@@ -74,7 +74,7 @@ export default async function OneUseCasePage({ params }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schema).replace(/</g, '\\u003c'),
+          __html: schema,
         }}
       />
 
